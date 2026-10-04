@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LeadController extends Controller
 {
@@ -27,8 +28,36 @@ class LeadController extends Controller
             'return_page' => ['nullable', Rule::in(['service', 'category'])],
             'message' => ['required', 'string', 'min:10', 'max:5000'],
             'website' => ['nullable', 'size:0'],
+            'additional_service_ids' => ['sometimes', 'array', 'max:30'],
+            'additional_service_ids.*' => ['integer', 'distinct'],
         ]);
         unset($data['website']);
+        $optionIds = $data['additional_service_ids'] ?? [];
+        unset($data['additional_service_ids']);
+        if ($optionIds && empty($data['service_id'])) {
+            throw ValidationException::withMessages(['additional_service_ids' => 'Выберите услугу для дополнительных опций.']);
+        }
+        if (! empty($data['service_id'])) {
+            $service = Service::with(['additionalServices' => fn ($query) => $query->where('is_active', true)])->findOrFail($data['service_id']);
+            $selectedOptions = $service->additionalServices->whereIn('id', $optionIds);
+            if ($selectedOptions->count() !== count($optionIds)) {
+                throw ValidationException::withMessages(['additional_service_ids' => 'Выбрана недоступная дополнительная услуга.']);
+            }
+            if ($optionIds || ($data['return_page'] ?? null) === 'service') {
+                $priced = $service->price_from !== null && $selectedOptions->every(fn ($option) => $option->pivot->price !== null);
+                $data['quote_snapshot'] = [
+                    'service_title' => $service->title[$locale] ?? $service->title['ru'],
+                    'base_price' => $service->price_from,
+                    'currency' => $service->price_currency,
+                    'options' => $selectedOptions->map(fn ($option): array => [
+                        'id' => $option->id,
+                        'title' => $option->title[$locale] ?? $option->title['ru'],
+                        'price' => $option->pivot->price,
+                    ])->values()->all(),
+                    'total' => $priced ? $service->price_from + $selectedOptions->sum('pivot.price') : null,
+                ];
+            }
+        }
         $returnPage = $data['return_page'] ?? null;
         unset($data['return_page']);
         Lead::create($data + ['locale' => $locale]);

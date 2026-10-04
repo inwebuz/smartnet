@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\AdditionalService;
 use App\Models\CaseStudy;
 use App\Models\Client;
 use App\Models\Lead;
@@ -42,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
-        foreach ([Lead::class, Client::class, Project::class, ProjectTask::class, Service::class, ServiceCategory::class, Technology::class, CaseStudy::class, User::class, Role::class, SiteSetting::class] as $model) {
+        foreach ([Lead::class, Client::class, Project::class, ProjectTask::class, Service::class, AdditionalService::class, ServiceCategory::class, Technology::class, CaseStudy::class, User::class, Role::class, SiteSetting::class] as $model) {
             Gate::policy($model, StudioPolicy::class);
         }
     }

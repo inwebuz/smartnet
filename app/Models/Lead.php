@@ -31,4 +31,9 @@ class Lead extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+    protected function casts(): array
+    {
+        return ['quote_snapshot' => 'array'];
+    }
 }

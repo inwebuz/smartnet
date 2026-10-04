@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach (['leads', 'clients', 'projects', 'tasks', 'services', 'categories', 'technologies', 'cases', 'team', 'roles', 'settings'] as $resource) {
+        foreach (['leads', 'clients', 'projects', 'tasks', 'services', 'additional_services', 'categories', 'technologies', 'cases', 'team', 'roles', 'settings'] as $resource) {
             foreach (['view', 'create', 'update', 'delete'] as $action) {
                 Permission::firstOrCreate(compact('resource', 'action'));
             }
@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             }
         }
         $this->call(CatalogSeeder::class);
+        $this->call(AdditionalServiceSeeder::class);
         $this->call([TechnologySeeder::class, SiteSettingSeeder::class]);
         CaseStudy::firstOrCreate(['slug' => 'your-first-project'], [
             'title' => ['ru' => 'Ваш первый кейс', 'uz' => 'Birinchi loyihangiz'],

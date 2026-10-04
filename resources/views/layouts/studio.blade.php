@@ -5,6 +5,7 @@
         <a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.dashboard') }}">Обзор</a>
         @can('viewAny', \App\Models\Lead::class)<a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.leads.index') }}">Заявки</a>@endcan
         @foreach(['clients' => \App\Models\Client::class, 'projects' => \App\Models\Project::class, 'tasks' => \App\Models\ProjectTask::class, 'services' => \App\Models\Service::class, 'cases' => \App\Models\CaseStudy::class] as $section => $model)@can('viewAny', $model)<a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.resources.index', $section) }}">{{ ['clients' => 'Клиенты', 'projects' => 'Проекты', 'tasks' => 'Задачи', 'services' => 'Услуги', 'cases' => 'Кейсы'][$section] }}</a>@endcan @endforeach
+        @can('viewAny', \App\Models\AdditionalService::class)<a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.resources.index', 'additional_services') }}">Допуслуги</a>@endcan
         @can('viewAny', \App\Models\ServiceCategory::class)<a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.resources.index', 'categories') }}">Категории услуг</a>@endcan
         @can('viewAny', \App\Models\Technology::class)<a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.resources.index', 'technologies') }}">Технологии</a>@endcan
         @can('viewAny', \App\Models\User::class)<a class="rounded-xl px-4 py-3 hover:bg-white/10" href="{{ route('studio.team.index') }}">Команда</a>@endcan

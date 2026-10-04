@@ -42,7 +42,7 @@ class PublicSiteController extends Controller
     {
         abort_unless(in_array($type, ['services', 'cases'], true), 404);
         $model = $type === 'services' ? Service::class : CaseStudy::class;
-        $item = $model::with($type === 'services' ? ['category.parent', 'technologies'] : ['technologies'])
+        $item = $model::with($type === 'services' ? ['category.parent', 'technologies', 'additionalServices'] : ['technologies'])
             ->where('slug', $slug)->where('is_published', true)->firstOrFail();
         if ($locale === 'en' && blank($item->title['en'] ?? null)) {
             abort(404);

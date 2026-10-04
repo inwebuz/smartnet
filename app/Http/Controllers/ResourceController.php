@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdditionalService;
 use App\Models\CaseStudy;
 use App\Models\Client;
 use App\Models\Project;
@@ -28,6 +29,7 @@ class ResourceController extends Controller
             'projects' => Project::class,
             'tasks' => ProjectTask::class,
             'services' => Service::class,
+            'additional_services' => AdditionalService::class,
             'categories' => ServiceCategory::class,
             'technologies' => Technology::class,
             'cases' => CaseStudy::class,
@@ -86,6 +88,7 @@ class ResourceController extends Controller
             'staff' => User::orderBy('name')->get(),
             'categories' => $categories,
             'technologies' => $technologies,
+            'additionalServices' => $resource === 'services' ? AdditionalService::orderBy('sort_order')->orderBy('id')->get() : collect(),
         ]);
     }
 
@@ -95,11 +98,15 @@ class ResourceController extends Controller
         Gate::authorize('create', $model);
         $data = $this->validated($request, $resource);
         $technologyIds = $data['technology_ids'] ?? [];
-        unset($data['technology_ids']);
+        $additionalServices = array_filter($data['additional_services'] ?? [], fn (array $option): bool => isset($option['id']));
+        unset($data['technology_ids'], $data['additional_services']);
         $this->handleImage($request, $resource, $data);
         $item = $model::create($data);
         if (in_array($resource, ['services', 'cases'], true)) {
             $item->technologies()->sync($technologyIds);
+        }
+        if ($resource === 'services') {
+            $this->syncAdditionalServices($item, $additionalServices);
         }
 
         return redirect()->route('studio.resources.edit', [$resource, $item->id])->with('message', 'Запись создана.');
@@ -111,7 +118,8 @@ class ResourceController extends Controller
         Gate::authorize('update', $item);
         $data = $this->validated($request, $resource, $id);
         $technologyIds = $data['technology_ids'] ?? [];
-        unset($data['technology_ids']);
+        $additionalServices = array_filter($data['additional_services'] ?? [], fn (array $option): bool => isset($option['id']));
+        unset($data['technology_ids'], $data['additional_services']);
         if (array_key_exists('assignee_id', $data) && $data['assignee_id'] != $item->assignee_id) {
             Gate::authorize('assign', $item);
         }
@@ -120,6 +128,9 @@ class ResourceController extends Controller
         $this->deleteUploadedImage($oldImagePath);
         if (in_array($resource, ['services', 'cases'], true)) {
             $item->technologies()->sync($technologyIds);
+        }
+        if ($resource === 'services') {
+            $this->syncAdditionalServices($item, $additionalServices);
         }
 
         return back()->with('message', 'Изменения сохранены.');
@@ -159,6 +170,13 @@ class ResourceController extends Controller
         }
     }
 
+    private function syncAdditionalServices(Service $service, array $additionalServices): void
+    {
+        $service->additionalServices()->sync(collect($additionalServices)->mapWithKeys(fn (array $option): array => [
+            $option['id'] => ['price' => $option['price'] ?? null, 'sort_order' => $option['sort_order'] ?? 0],
+        ])->all());
+    }
+
     private function validated(Request $request, string $resource, ?int $id = null): array
     {
         $data = match ($resource) {
@@ -196,6 +214,13 @@ class ResourceController extends Controller
                 'kind' => ['required', Rule::in(['frontend', 'backend', 'design', 'devops', 'other'])],
                 'sort_order' => ['required', 'integer', 'min:0'],
             ]),
+            'additional_services' => $request->validate([
+                'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'],
+                'title_en' => ['required', 'string', 'max:255'],
+                'description_ru' => ['nullable', 'string', 'max:2000'], 'description_uz' => ['nullable', 'string', 'max:2000'],
+                'description_en' => ['nullable', 'string', 'max:2000'],
+                'sort_order' => ['required', 'integer', 'min:0'], 'is_active' => ['sometimes', 'boolean'],
+            ]),
             'services', 'cases' => $request->validate([
                 'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique($resource === 'cases' ? 'case_studies' : 'services', 'slug')->ignore($id)],
                 'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'], 'title_en' => ['nullable', 'string', 'max:255'],
@@ -213,8 +238,20 @@ class ResourceController extends Controller
                 'price_currency' => $resource === 'services' ? ['sometimes', Rule::in(['UZS', 'USD', 'EUR', 'RUB'])] : ['prohibited'],
                 'technology_ids' => ['sometimes', 'array'],
                 'technology_ids.*' => ['integer', 'distinct', 'exists:technologies,id'],
+                'additional_services' => $resource === 'services' ? ['sometimes', 'array'] : ['prohibited'],
+                'additional_services.*.id' => $resource === 'services' ? ['nullable', 'integer', 'distinct', 'exists:additional_services,id'] : ['prohibited'],
+                'additional_services.*.price' => $resource === 'services' ? ['nullable', 'integer', 'min:0'] : ['prohibited'],
+                'additional_services.*.sort_order' => $resource === 'services' ? ['required', 'integer', 'min:0'] : ['prohibited'],
             ]),
         };
+        if ($resource === 'additional_services') {
+            $data['title'] = ['ru' => $data['title_ru'], 'uz' => $data['title_uz'], 'en' => $data['title_en']];
+            $data['description'] = array_filter(['ru' => $data['description_ru'] ?? null, 'uz' => $data['description_uz'] ?? null, 'en' => $data['description_en'] ?? null], fn ($value) => filled($value));
+            $data['is_active'] = $request->boolean('is_active');
+            foreach (['title_ru', 'title_uz', 'title_en', 'description_ru', 'description_uz', 'description_en'] as $field) {
+                unset($data[$field]);
+            }
+        }
         if ($resource === 'categories') {
             if ($id !== null && ($data['parent_id'] ?? null) !== null && in_array((int) $data['parent_id'], ServiceCategory::findOrFail($id)->subtreeIds(), true)) {
                 throw ValidationException::withMessages(['parent_id' => 'Нельзя выбрать эту категорию родительской.']);

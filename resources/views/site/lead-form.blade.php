@@ -13,6 +13,7 @@
         <input type="text" name="website" tabindex="-1" autocomplete="off" class="absolute -left-[9999px]" aria-hidden="true">
         @if($leadService)<input type="hidden" name="service_id" value="{{ $leadService->id }}"><input type="hidden" name="return_page" value="service">@endif
         @if($leadCategory)<input type="hidden" name="service_category_id" value="{{ $leadCategory->id }}"><input type="hidden" name="return_page" value="category">@endif
+        @if($leadService)@include('site.additional-services')@endif
         <label class="block text-sm font-semibold">{{ $formCopy['name'] }}<input required name="name" value="{{ old('name') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
         <div class="grid gap-5 sm:grid-cols-2"><label class="block text-sm font-semibold">Email<input type="email" name="email" value="{{ old('email') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label><label class="block text-sm font-semibold">{{ $formCopy['phone'] }}<input name="phone" value="{{ old('phone') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label></div>
         <label class="block text-sm font-semibold">{{ $formCopy['message'] }}<textarea required minlength="10" name="message" rows="5" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('message') }}</textarea></label>

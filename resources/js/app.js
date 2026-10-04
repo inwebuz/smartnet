@@ -74,6 +74,26 @@ if (hero) {
 
 const revealElements = document.querySelectorAll('[data-reveal]');
 
+document.querySelectorAll('[data-service-calculator]').forEach((calculator) => {
+    const total = calculator.querySelector('[data-calculator-total]');
+    const checkboxes = calculator.querySelectorAll('[data-option-price]');
+    const format = (amount) => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount).replace(/\u00a0/g, ' ');
+
+    const update = () => {
+        const base = calculator.dataset.basePrice;
+        const selected = [...checkboxes].filter((checkbox) => checkbox.checked);
+        if (base === '' || selected.some((checkbox) => checkbox.dataset.optionPrice === '')) {
+            total.textContent = calculator.dataset.requestLabel;
+            return;
+        }
+        const amount = selected.reduce((sum, checkbox) => sum + Number(checkbox.dataset.optionPrice), Number(base));
+        total.textContent = `${calculator.dataset.totalLabel} ${format(amount)} ${calculator.dataset.currency}`;
+    };
+
+    checkboxes.forEach((checkbox) => checkbox.addEventListener('change', update));
+    update();
+});
+
 if (revealElements.length && 'IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {

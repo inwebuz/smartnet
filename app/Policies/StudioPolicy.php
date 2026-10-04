@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\AdditionalService;
 use App\Models\CaseStudy;
 use App\Models\Client;
 use App\Models\Lead;
@@ -25,6 +26,7 @@ class StudioPolicy
             Project::class => 'projects',
             ProjectTask::class => 'tasks',
             Service::class => 'services',
+            AdditionalService::class => 'additional_services',
             ServiceCategory::class => 'categories',
             Technology::class => 'technologies',
             CaseStudy::class => 'cases',
