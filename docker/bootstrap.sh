@@ -18,3 +18,4 @@ until php -r 'try { new PDO("mysql:host=".getenv("DB_HOST").";port=".getenv("DB_
 done
 
 php artisan migrate --force --no-interaction
+php artisan db:seed --force --no-interaction
