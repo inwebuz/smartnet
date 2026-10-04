@@ -123,9 +123,11 @@ class CatalogPagesTest extends TestCase
         $this->put("/studio/categories/{$category->id}", [
             'slug' => 'telegram-bots', 'title_ru' => 'Telegram-боты', 'title_uz' => 'Telegram botlar', 'title_en' => 'Telegram bots',
             'summary_ru' => 'Боты для бизнеса', 'summary_uz' => 'Biznes uchun botlar', 'summary_en' => 'Bots for business',
+            'description_ru' => 'Разрабатываем ботов для задач компании.',
             'seo_title_ru' => 'Боты для бизнеса | Smartnet', 'price_from' => 9000000, 'price_currency' => 'UZS', 'sort_order' => 1,
         ])->assertRedirect();
         $this->assertSame(9000000, $category->fresh()->price_from);
         $this->assertSame('Боты для бизнеса | Smartnet', $category->fresh()->seo_title['ru']);
+        $this->assertSame('Разрабатываем ботов для задач компании.', $category->fresh()->description['ru']);
     }
 }

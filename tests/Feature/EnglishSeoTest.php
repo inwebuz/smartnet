@@ -28,11 +28,11 @@ class EnglishSeoTest extends TestCase
         $this->get('/ru')->assertSee('Индивидуальный текст о разработке сайтов.');
 
         $category = ServiceCategory::where('slug', 'websites')->firstOrFail();
-        $category->update(['description_ru' => 'Подробное описание категории для поиска.']);
+        $category->update(['description' => ['ru' => 'Подробное описание категории для поиска.']]);
         $this->get('/ru/service-categories/websites')->assertSee('Подробное описание категории для поиска.');
 
         $service = Service::where('slug', 'landing-page')->firstOrFail();
-        $service->update(['description_ru' => 'Подробное описание услуги для поиска.']);
+        $service->update(['description' => ['ru' => 'Подробное описание услуги для поиска.']]);
         $this->get('/ru/services/landing-page')->assertSee('Подробное описание услуги для поиска.');
     }
 
@@ -75,11 +75,13 @@ class EnglishSeoTest extends TestCase
         $this->put("/studio/services/{$service->id}", [
             'slug' => 'corporate-website', 'title_ru' => 'Сайты', 'title_uz' => 'Saytlar', 'title_en' => 'Web development',
             'summary_ru' => 'Создание сайтов', 'summary_uz' => 'Saytlar yaratish', 'summary_en' => 'Websites that work.',
+            'description_en' => 'We build websites around your business goals.',
             'seo_title_en' => 'Custom websites | Smartnet', 'seo_description_en' => 'Custom websites for growing companies.',
             'sort_order' => 0,
         ])->assertRedirect();
         $this->get('/en/services/corporate-website')->assertOk()
             ->assertSee('<title>Custom websites | Smartnet</title>', false)
+            ->assertSee('We build websites around your business goals.')
             ->assertSee('content="Custom websites for growing companies."', false)
             ->assertSee('rel="canonical"', false)
             ->assertSee('hreflang="en"', false);

@@ -73,12 +73,13 @@ class ServiceTaxonomyTest extends TestCase
         $this->actingAs(User::factory()->create(['is_owner' => true]));
         $this->post('/studio/cases', [
             'slug' => 'showcase', 'title_ru' => 'Кейс', 'title_uz' => 'Loyiha',
-            'summary_ru' => 'Описание', 'summary_uz' => 'Tavsif', 'technology_ids' => [$technology->id], 'sort_order' => 0,
+            'summary_ru' => 'Описание', 'summary_uz' => 'Tavsif', 'description_ru' => 'Подробности кейса', 'technology_ids' => [$technology->id], 'sort_order' => 0,
         ])->assertRedirect();
         $case = CaseStudy::where('slug', 'showcase')->firstOrFail();
         $this->assertTrue($case->technologies->contains($technology));
+        $this->assertSame('Подробности кейса', $case->description['ru']);
         $this->post("/studio/cases/{$case->id}/publish")->assertRedirect();
-        $this->get('/ru/cases/showcase')->assertOk()->assertSee('Vue');
+        $this->get('/ru/cases/showcase')->assertOk()->assertSee('Vue')->assertSee('Подробности кейса');
         $this->delete("/studio/technologies/{$technology->id}")->assertSessionHasErrors('technology');
     }
 }

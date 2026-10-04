@@ -24,7 +24,7 @@
     <section class="mt-14"><h2 data-reveal class="text-2xl font-bold">{{ $copy['services'] }}</h2><div class="mt-6 grid gap-5 md:grid-cols-2">@forelse($services as $service)<a data-reveal href="{{ route('site.detail', [$locale, 'services', $service->slug]) }}" class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200 hover:shadow-lg">@if($service->image_path)<img src="{{ $service->image_path }}" alt="{{ $service->title[$locale] }}" loading="lazy" class="mb-5 aspect-video w-full rounded-xl object-cover">@endif<h3 class="text-xl font-bold">{{ $service->title[$locale] }}</h3><p class="mt-3 text-slate-600">{{ $service->summary[$locale] }}</p><div class="mt-5">@include('site.price', ['priced' => $service])</div></a>@empty<p class="text-slate-600">{{ $copy['empty'] }}</p>@endforelse</div></section>
     <section data-reveal class="mt-20 border-t border-slate-200 pt-12">
         <h2 class="text-3xl font-bold">{{ $category->title[$locale] }} — {{ $seoCopy['heading'] }}</h2>
-        <p class="mt-6 max-w-4xl whitespace-pre-line text-lg leading-8 text-slate-600">{{ $category->{'description_'.$locale} ?: $seoCopy['text'] }}</p>
+        <p class="mt-6 max-w-4xl whitespace-pre-line text-lg leading-8 text-slate-600">{{ ($category->description[$locale] ?? null) ?: $seoCopy['text'] }}</p>
     </section>
     @include('site.lead-form', ['leadService' => null, 'leadCategory' => $category])
 </article>

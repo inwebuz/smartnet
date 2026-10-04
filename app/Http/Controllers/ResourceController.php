@@ -220,7 +220,7 @@ class ResourceController extends Controller
                 throw ValidationException::withMessages(['parent_id' => 'Нельзя выбрать эту категорию родительской.']);
             }
             $data['title'] = array_filter(['ru' => $data['title_ru'], 'uz' => $data['title_uz'], 'en' => $data['title_en'] ?? null], fn ($value) => filled($value));
-            foreach (['summary', 'seo_title', 'seo_description'] as $field) {
+            foreach (['summary', 'description', 'seo_title', 'seo_description'] as $field) {
                 $data[$field] = array_filter(['ru' => $data[$field.'_ru'] ?? null, 'uz' => $data[$field.'_uz'] ?? null, 'en' => $data[$field.'_en'] ?? null], fn ($value) => filled($value));
                 foreach (['ru', 'uz', 'en'] as $locale) {
                     unset($data[$field.'_'.$locale]);
@@ -231,11 +231,12 @@ class ResourceController extends Controller
         if (in_array($resource, ['services', 'cases'], true)) {
             $data['title'] = array_filter(['ru' => $data['title_ru'], 'uz' => $data['title_uz'], 'en' => $data['title_en'] ?? null], fn ($value) => filled($value));
             $data['summary'] = array_filter(['ru' => $data['summary_ru'], 'uz' => $data['summary_uz'], 'en' => $data['summary_en'] ?? null], fn ($value) => filled($value));
+            $data['description'] = array_filter(['ru' => $data['description_ru'] ?? null, 'uz' => $data['description_uz'] ?? null, 'en' => $data['description_en'] ?? null], fn ($value) => filled($value));
             $data['seo_title'] = array_filter(['ru' => $data['seo_title_ru'] ?? null, 'uz' => $data['seo_title_uz'] ?? null, 'en' => $data['seo_title_en'] ?? null], fn ($value) => filled($value));
             $data['seo_description'] = array_filter(['ru' => $data['seo_description_ru'] ?? null, 'uz' => $data['seo_description_uz'] ?? null, 'en' => $data['seo_description_en'] ?? null], fn ($value) => filled($value));
             unset($data['title_ru'], $data['title_uz'], $data['title_en'], $data['summary_ru'], $data['summary_uz'], $data['summary_en']);
             foreach (['ru', 'uz', 'en'] as $locale) {
-                unset($data['seo_title_'.$locale], $data['seo_description_'.$locale]);
+                unset($data['description_'.$locale], $data['seo_title_'.$locale], $data['seo_description_'.$locale]);
             }
             if ($resource === 'services') {
                 unset($data['image_path']);

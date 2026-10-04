@@ -20,12 +20,12 @@
     <h1 data-reveal class="mt-5 text-5xl font-black leading-tight">{{ $item->title[$locale] }}</h1><p data-reveal style="--reveal-delay: 80ms" class="mt-8 text-xl leading-9 text-slate-600">{{ $item->summary[$locale] }}</p>
     @if($type === 'services')<p class="mt-6 text-lg">@include('site.price', ['priced' => $item])</p>@endif
     @if($item->image_path)<img data-reveal src="{{ $item->image_path }}" alt="{{ $item->title[$locale] }}" class="mt-14 aspect-video w-full rounded-[2rem] object-cover">@else<div data-reveal class="mt-14 rounded-[2rem] bg-gradient-to-br from-violet-200 via-indigo-100 to-cyan-100 p-16"></div>@endif
-    @if($type === 'cases' && $item->{'description_'.$locale})<div class="prose prose-lg mt-12 max-w-none whitespace-pre-line text-slate-700">{{ $item->{'description_'.$locale} }}</div>@endif
+    @if($type === 'cases' && ($item->description[$locale] ?? null))<div class="prose prose-lg mt-12 max-w-none whitespace-pre-line text-slate-700">{{ $item->description[$locale] }}</div>@endif
     @if($item->technologies->isNotEmpty())<div class="mt-12"><h2 class="text-lg font-bold">{{ $copy['stack'] }}</h2><div class="mt-4 flex flex-wrap gap-2">@foreach($item->technologies as $technology)<span class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">{{ $technology->name }}</span>@endforeach</div></div>@endif
     @if($type === 'services')
         <section data-reveal class="mt-20 border-t border-slate-200 pt-12">
             <h2 class="text-3xl font-bold">{{ $item->title[$locale] }} — {{ $seoCopy['heading'] }}</h2>
-            <p class="mt-6 max-w-4xl whitespace-pre-line text-lg leading-8 text-slate-600">{{ $item->{'description_'.$locale} ?: $seoCopy['text'] }}</p>
+            <p class="mt-6 max-w-4xl whitespace-pre-line text-lg leading-8 text-slate-600">{{ ($item->description[$locale] ?? null) ?: $seoCopy['text'] }}</p>
         </section>
         @include('site.lead-form', ['leadService' => $item, 'leadCategory' => null])
     @else

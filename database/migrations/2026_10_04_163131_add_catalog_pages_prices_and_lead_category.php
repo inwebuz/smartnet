@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::table('service_categories', function (Blueprint $table) {
             $table->json('summary')->nullable();
-            $table->longText('description_ru')->nullable();
-            $table->longText('description_uz')->nullable();
-            $table->longText('description_en')->nullable();
+            $table->json('description')->nullable();
             $table->json('seo_title')->nullable();
             $table->json('seo_description')->nullable();
             $table->unsignedBigInteger('price_from')->nullable();
@@ -43,7 +41,7 @@ return new class extends Migration
             $table->dropColumn(['price_from', 'price_currency']);
         });
         Schema::table('service_categories', function (Blueprint $table) {
-            $table->dropColumn(['summary', 'description_ru', 'description_uz', 'description_en', 'seo_title', 'seo_description', 'price_from', 'price_currency', 'is_published']);
+            $table->dropColumn(['summary', 'description', 'seo_title', 'seo_description', 'price_from', 'price_currency', 'is_published']);
         });
     }
 };

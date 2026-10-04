@@ -16,6 +16,6 @@ class CaseStudy extends Model
 
     protected function casts(): array
     {
-        return ['title' => 'array', 'summary' => 'array', 'seo_title' => 'array', 'seo_description' => 'array', 'is_published' => 'boolean'];
+        return ['title' => 'array', 'summary' => 'array', 'description' => 'array', 'seo_title' => 'array', 'seo_description' => 'array', 'is_published' => 'boolean'];
     }
 }

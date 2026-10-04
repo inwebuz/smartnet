@@ -13,7 +13,6 @@ return new class extends Migration
     {
         foreach (['services', 'case_studies'] as $name) {
             Schema::table($name, function (Blueprint $table) {
-                $table->longText('description_en')->nullable();
                 $table->json('seo_title')->nullable();
                 $table->json('seo_description')->nullable();
             });
@@ -27,7 +26,7 @@ return new class extends Migration
     {
         foreach (['services', 'case_studies'] as $name) {
             Schema::table($name, function (Blueprint $table) {
-                $table->dropColumn(['description_en', 'seo_title', 'seo_description']);
+                $table->dropColumn(['seo_title', 'seo_description']);
             });
         }
     }

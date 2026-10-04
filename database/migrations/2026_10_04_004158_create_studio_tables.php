@@ -38,8 +38,7 @@ return new class extends Migration
                 $table->string('slug')->unique();
                 $table->json('title');
                 $table->json('summary');
-                $table->longText('description_ru')->nullable();
-                $table->longText('description_uz')->nullable();
+                $table->json('description')->nullable();
                 if ($name === 'case_studies') {
                     $table->string('image_path')->nullable();
                 }

@@ -29,7 +29,7 @@
         @foreach(['ru' => 'Русский', 'uz' => 'O‘zbekcha', 'en' => 'English'] as $locale => $caption)
             <fieldset class="space-y-4 rounded-xl border border-slate-200 p-5"><legend class="px-2 font-bold">{{ $caption }} · страница категории</legend>
                 <label class="block text-sm font-semibold">Краткое описание<textarea name="summary_{{ $locale }}" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('summary_'.$locale, $item->summary[$locale] ?? '') }}</textarea></label>
-                <label class="block text-sm font-semibold">Полное описание<textarea name="description_{{ $locale }}" rows="4" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('description_'.$locale, $item->{'description_'.$locale}) }}</textarea></label>
+                <label class="block text-sm font-semibold">Полное описание<textarea name="description_{{ $locale }}" rows="4" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('description_'.$locale, ($item->description[$locale] ?? '')) }}</textarea></label>
                 <label class="block text-sm font-semibold">SEO title<input name="seo_title_{{ $locale }}" value="{{ old('seo_title_'.$locale, $item->seo_title[$locale] ?? '') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
                 <label class="block text-sm font-semibold">SEO description<textarea name="seo_description_{{ $locale }}" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('seo_description_'.$locale, $item->seo_description[$locale] ?? '') }}</textarea></label>
             </fieldset>
