@@ -7,11 +7,14 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\SiteSetting;
+use App\Models\Technology;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ResourceController extends Controller
 {
@@ -22,6 +25,8 @@ class ResourceController extends Controller
             'projects' => Project::class,
             'tasks' => ProjectTask::class,
             'services' => Service::class,
+            'categories' => ServiceCategory::class,
+            'technologies' => Technology::class,
             'cases' => CaseStudy::class,
             default => abort(404),
         };
@@ -31,6 +36,14 @@ class ResourceController extends Controller
     {
         $model = $this->model($resource);
         Gate::authorize('viewAny', $model);
+
+        if (in_array($resource, ['categories', 'technologies'], true)) {
+            $items = $resource === 'categories'
+                ? ServiceCategory::with('parent')->orderBy('sort_order')->orderBy('id')->get()
+                : Technology::orderBy('sort_order')->orderBy('name')->get();
+
+            return view('studio.taxonomy.index', compact('resource', 'items', 'model'));
+        }
 
         return view('studio.resources.index', ['resource' => $resource, 'model' => $model, 'items' => $model::latest()->paginate(20)]);
     }
@@ -53,12 +66,23 @@ class ResourceController extends Controller
 
     private function form(string $resource, object $item)
     {
+        $categories = ServiceCategory::orderBy('sort_order')->orderBy('id')->get();
+        $technologies = Technology::orderBy('sort_order')->orderBy('name')->get();
+
+        if (in_array($resource, ['categories', 'technologies'], true)) {
+            $excludedCategoryIds = $item instanceof ServiceCategory && $item->exists ? $item->subtreeIds() : [];
+
+            return view('studio.taxonomy.form', compact('resource', 'item', 'categories', 'excludedCategoryIds'));
+        }
+
         return view('studio.resources.form', [
             'resource' => $resource,
             'item' => $item,
             'clients' => Client::orderBy('name')->get(),
             'projects' => Project::orderBy('title')->get(),
             'staff' => User::orderBy('name')->get(),
+            'categories' => $categories,
+            'technologies' => $technologies,
         ]);
     }
 
@@ -66,7 +90,13 @@ class ResourceController extends Controller
     {
         $model = $this->model($resource);
         Gate::authorize('create', $model);
-        $item = $model::create($this->validated($request, $resource));
+        $data = $this->validated($request, $resource);
+        $technologyIds = $data['technology_ids'] ?? [];
+        unset($data['technology_ids']);
+        $item = $model::create($data);
+        if (in_array($resource, ['services', 'cases'], true)) {
+            $item->technologies()->sync($technologyIds);
+        }
 
         return redirect()->route('studio.resources.edit', [$resource, $item->id])->with('message', 'Запись создана.');
     }
@@ -76,10 +106,15 @@ class ResourceController extends Controller
         $item = $this->model($resource)::findOrFail($id);
         Gate::authorize('update', $item);
         $data = $this->validated($request, $resource, $id);
+        $technologyIds = $data['technology_ids'] ?? [];
+        unset($data['technology_ids']);
         if (array_key_exists('assignee_id', $data) && $data['assignee_id'] != $item->assignee_id) {
             Gate::authorize('assign', $item);
         }
         $item->update($data);
+        if (in_array($resource, ['services', 'cases'], true)) {
+            $item->technologies()->sync($technologyIds);
+        }
 
         return back()->with('message', 'Изменения сохранены.');
     }
@@ -103,6 +138,18 @@ class ResourceController extends Controller
                 'priority' => ['required', Rule::in(['low', 'normal', 'high'])], 'assignee_id' => ['nullable', 'exists:users,id'],
                 'due_on' => ['nullable', 'date'],
             ]),
+            'categories' => $request->validate([
+                'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique('service_categories', 'slug')->ignore($id)],
+                'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'],
+                'parent_id' => ['nullable', 'exists:service_categories,id'],
+                'sort_order' => ['required', 'integer', 'min:0'],
+            ]),
+            'technologies' => $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique('technologies', 'slug')->ignore($id)],
+                'kind' => ['required', Rule::in(['frontend', 'backend', 'design', 'devops', 'other'])],
+                'sort_order' => ['required', 'integer', 'min:0'],
+            ]),
             'services', 'cases' => $request->validate([
                 'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique($resource === 'cases' ? 'case_studies' : 'services', 'slug')->ignore($id)],
                 'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'],
@@ -110,14 +157,26 @@ class ResourceController extends Controller
                 'description_ru' => ['nullable', 'string'], 'description_uz' => ['nullable', 'string'],
                 'sort_order' => ['required', 'integer', 'min:0'],
                 'image_path' => ['nullable', 'string', 'max:255'],
+                'service_category_id' => $resource === 'services' ? ['nullable', 'exists:service_categories,id'] : ['prohibited'],
+                'technology_ids' => ['sometimes', 'array'],
+                'technology_ids.*' => ['integer', 'distinct', 'exists:technologies,id'],
             ]),
         };
+        if ($resource === 'categories') {
+            if ($id !== null && ($data['parent_id'] ?? null) !== null && in_array((int) $data['parent_id'], ServiceCategory::findOrFail($id)->subtreeIds(), true)) {
+                throw ValidationException::withMessages(['parent_id' => 'Нельзя выбрать эту категорию родительской.']);
+            }
+            $data['title'] = ['ru' => $data['title_ru'], 'uz' => $data['title_uz']];
+            unset($data['title_ru'], $data['title_uz']);
+        }
         if (in_array($resource, ['services', 'cases'], true)) {
             $data['title'] = ['ru' => $data['title_ru'], 'uz' => $data['title_uz']];
             $data['summary'] = ['ru' => $data['summary_ru'], 'uz' => $data['summary_uz']];
             unset($data['title_ru'], $data['title_uz'], $data['summary_ru'], $data['summary_uz']);
             if ($resource === 'services') {
                 unset($data['image_path']);
+            } else {
+                unset($data['service_category_id']);
             }
         }
         if (array_key_exists('assignee_id', $data) && $data['assignee_id'] !== null) {
@@ -136,6 +195,12 @@ class ResourceController extends Controller
         Gate::authorize('delete', $item);
         if ($item instanceof Client && $item->projects()->exists()) {
             return back()->withErrors(['client' => 'Сначала удалите проекты клиента.']);
+        }
+        if ($item instanceof ServiceCategory && ($item->children()->exists() || $item->services()->exists())) {
+            return back()->withErrors(['category' => 'Переместите дочерние категории и услуги перед удалением.']);
+        }
+        if ($item instanceof Technology && ($item->services()->exists() || $item->caseStudies()->exists())) {
+            return back()->withErrors(['technology' => 'Сначала уберите технологию из услуг и кейсов.']);
         }
         $item->delete();
 

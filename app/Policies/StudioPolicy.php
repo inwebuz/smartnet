@@ -9,7 +9,9 @@ use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\Role;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\SiteSetting;
+use App\Models\Technology;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,6 +25,8 @@ class StudioPolicy
             Project::class => 'projects',
             ProjectTask::class => 'tasks',
             Service::class => 'services',
+            ServiceCategory::class => 'categories',
+            Technology::class => 'technologies',
             CaseStudy::class => 'cases',
             User::class => 'team',
             Role::class => 'roles',

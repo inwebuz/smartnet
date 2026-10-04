@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach (['leads', 'clients', 'projects', 'tasks', 'services', 'cases', 'team', 'roles', 'settings'] as $resource) {
+        foreach (['leads', 'clients', 'projects', 'tasks', 'services', 'categories', 'technologies', 'cases', 'team', 'roles', 'settings'] as $resource) {
             foreach (['view', 'create', 'update', 'delete'] as $action) {
                 Permission::firstOrCreate(compact('resource', 'action'));
             }

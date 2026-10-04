@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\CaseStudy;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\SiteSetting;
+use Illuminate\Http\Request;
 
 class PublicSiteController extends Controller
 {
@@ -13,9 +15,17 @@ class PublicSiteController extends Controller
         return view('site.home', $this->data($locale));
     }
 
-    public function services(string $locale)
+    public function services(Request $request, string $locale)
     {
-        return view('site.list', array_merge($this->data($locale), ['type' => 'services']));
+        $data = $this->data($locale);
+        $selectedCategory = null;
+
+        if ($request->filled('category')) {
+            $selectedCategory = ServiceCategory::where('slug', $request->query('category'))->firstOrFail();
+            $data['services'] = $data['services']->whereIn('service_category_id', $selectedCategory->subtreeIds());
+        }
+
+        return view('site.list', array_merge($data, compact('selectedCategory'), ['type' => 'services']));
     }
 
     public function cases(string $locale)
@@ -32,7 +42,8 @@ class PublicSiteController extends Controller
     {
         abort_unless(in_array($type, ['services', 'cases'], true), 404);
         $model = $type === 'services' ? Service::class : CaseStudy::class;
-        $item = $model::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        $item = $model::with($type === 'services' ? ['category.parent', 'technologies'] : ['technologies'])
+            ->where('slug', $slug)->where('is_published', true)->firstOrFail();
 
         return view('site.detail', array_merge($this->data($locale), compact('item', 'type')));
     }
@@ -44,8 +55,9 @@ class PublicSiteController extends Controller
 
         return [
             'locale' => $locale,
-            'services' => Service::where('is_published', true)->orderBy('sort_order')->get(),
-            'cases' => CaseStudy::where('is_published', true)->orderBy('sort_order')->get(),
+            'services' => Service::with(['category.parent', 'technologies'])->where('is_published', true)->orderBy('sort_order')->get(),
+            'cases' => CaseStudy::with('technologies')->where('is_published', true)->orderBy('sort_order')->get(),
+            'categories' => ServiceCategory::with('parent')->orderBy('sort_order')->get(),
             'settings' => SiteSetting::all()->pluck('value', 'key'),
         ];
     }

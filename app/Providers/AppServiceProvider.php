@@ -9,7 +9,9 @@ use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\Role;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\SiteSetting;
+use App\Models\Technology;
 use App\Models\User;
 use App\Policies\StudioPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -40,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
-        foreach ([Lead::class, Client::class, Project::class, ProjectTask::class, Service::class, CaseStudy::class, User::class, Role::class, SiteSetting::class] as $model) {
+        foreach ([Lead::class, Client::class, Project::class, ProjectTask::class, Service::class, ServiceCategory::class, Technology::class, CaseStudy::class, User::class, Role::class, SiteSetting::class] as $model) {
             Gate::policy($model, StudioPolicy::class);
         }
     }
