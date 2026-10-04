@@ -60,7 +60,7 @@
         <main>@yield('content')</main>
         <footer class="mt-24 border-t border-slate-200 bg-white px-6 py-12 text-sm text-slate-500 lg:px-10">
             <div class="mx-auto flex max-w-7xl flex-col justify-between gap-6 md:flex-row">
-                <div><strong class="text-xl text-slate-950">smartnet.</strong><p class="mt-2">{{ $navigation['tagline'] }}</p></div>
+                <div><strong class="text-xl text-slate-950">smartnet.</strong></div>
                 <div class="flex flex-wrap gap-6">@foreach(['services', 'cases', 'contact'] as $page)<a href="{{ route('site.'.$page, $locale) }}">{{ $navigation[$page] }}</a>@endforeach</div>
                 <span>© {{ date('Y') }} Smartnet</span>
             </div>
