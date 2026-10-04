@@ -11,8 +11,11 @@ use App\Models\ServiceCategory;
 use App\Models\SiteSetting;
 use App\Models\Technology;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -93,6 +96,7 @@ class ResourceController extends Controller
         $data = $this->validated($request, $resource);
         $technologyIds = $data['technology_ids'] ?? [];
         unset($data['technology_ids']);
+        $this->handleImage($request, $resource, $data);
         $item = $model::create($data);
         if (in_array($resource, ['services', 'cases'], true)) {
             $item->technologies()->sync($technologyIds);
@@ -111,12 +115,48 @@ class ResourceController extends Controller
         if (array_key_exists('assignee_id', $data) && $data['assignee_id'] != $item->assignee_id) {
             Gate::authorize('assign', $item);
         }
+        $oldImagePath = $this->handleImage($request, $resource, $data, $item);
         $item->update($data);
+        $this->deleteUploadedImage($oldImagePath);
         if (in_array($resource, ['services', 'cases'], true)) {
             $item->technologies()->sync($technologyIds);
         }
 
         return back()->with('message', 'Изменения сохранены.');
+    }
+
+    private function handleImage(Request $request, string $resource, array &$data, ?Model $item = null): ?string
+    {
+        if (! in_array($resource, ['services', 'categories'], true)) {
+            return null;
+        }
+
+        unset($data['image'], $data['remove_image']);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('catalog/'.$resource, 'public');
+            if ($path === false) {
+                throw ValidationException::withMessages(['image' => 'Не удалось сохранить изображение. Попробуйте ещё раз.']);
+            }
+            $data['image_path'] = '/storage/'.$path;
+
+            return $item?->image_path;
+        }
+
+        if ($item && $request->boolean('remove_image')) {
+            $data['image_path'] = null;
+
+            return $item->image_path;
+        }
+
+        return null;
+    }
+
+    private function deleteUploadedImage(?string $path): void
+    {
+        if ($path && Str::startsWith($path, '/storage/catalog/')) {
+            Storage::disk('public')->delete(Str::after($path, '/storage/'));
+        }
     }
 
     private function validated(Request $request, string $resource, ?int $id = null): array
@@ -145,6 +185,7 @@ class ResourceController extends Controller
                 'sort_order' => ['required', 'integer', 'min:0'],
                 'summary_ru' => ['nullable', 'string', 'max:1000'], 'summary_uz' => ['nullable', 'string', 'max:1000'], 'summary_en' => ['nullable', 'string', 'max:1000'],
                 'description_ru' => ['nullable', 'string'], 'description_uz' => ['nullable', 'string'], 'description_en' => ['nullable', 'string'],
+                'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], 'remove_image' => ['sometimes', 'boolean'],
                 'seo_title_ru' => ['nullable', 'string', 'max:255'], 'seo_title_uz' => ['nullable', 'string', 'max:255'], 'seo_title_en' => ['nullable', 'string', 'max:255'],
                 'seo_description_ru' => ['nullable', 'string', 'max:500'], 'seo_description_uz' => ['nullable', 'string', 'max:500'], 'seo_description_en' => ['nullable', 'string', 'max:500'],
                 'price_from' => ['nullable', 'integer', 'min:0'], 'price_currency' => ['sometimes', Rule::in(['UZS', 'USD', 'EUR', 'RUB'])],
@@ -165,6 +206,8 @@ class ResourceController extends Controller
                 'seo_description_ru' => ['nullable', 'string', 'max:500'], 'seo_description_uz' => ['nullable', 'string', 'max:500'], 'seo_description_en' => ['nullable', 'string', 'max:500'],
                 'sort_order' => ['required', 'integer', 'min:0'],
                 'image_path' => ['nullable', 'string', 'max:255'],
+                'image' => $resource === 'services' ? ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'] : ['prohibited'],
+                'remove_image' => $resource === 'services' ? ['sometimes', 'boolean'] : ['prohibited'],
                 'service_category_id' => $resource === 'services' ? ['nullable', 'exists:service_categories,id'] : ['prohibited'],
                 'price_from' => $resource === 'services' ? ['nullable', 'integer', 'min:0'] : ['prohibited'],
                 'price_currency' => $resource === 'services' ? ['sometimes', Rule::in(['UZS', 'USD', 'EUR', 'RUB'])] : ['prohibited'],
@@ -223,7 +266,9 @@ class ResourceController extends Controller
         if ($item instanceof Technology && ($item->services()->exists() || $item->caseStudies()->exists())) {
             return back()->withErrors(['technology' => 'Сначала уберите технологию из услуг и кейсов.']);
         }
+        $imagePath = $item instanceof Service || $item instanceof ServiceCategory ? $item->image_path : null;
         $item->delete();
+        $this->deleteUploadedImage($imagePath);
 
         return redirect()->route('studio.resources.index', $resource)->with('message', 'Запись удалена.');
     }
@@ -252,6 +297,7 @@ class ResourceController extends Controller
             'email' => ['nullable', 'email', 'max:255'], 'phone' => ['nullable', 'string', 'max:50'],
             'telegram' => ['nullable', 'string', 'max:255'],
             'location_ru' => ['nullable', 'string', 'max:255'], 'location_uz' => ['nullable', 'string', 'max:255'], 'location_en' => ['nullable', 'string', 'max:255'],
+            'home_seo_ru' => ['nullable', 'string', 'max:5000'], 'home_seo_uz' => ['nullable', 'string', 'max:5000'], 'home_seo_en' => ['nullable', 'string', 'max:5000'],
         ]);
         foreach ($data as $key => $value) {
             SiteSetting::updateOrCreate(['key' => $key], ['value' => ['text' => $value]]);

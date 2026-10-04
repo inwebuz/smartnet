@@ -29,8 +29,11 @@ class CatalogSeeder extends Seeder
                 'seo_title' => array_map(fn (string $value) => $value.' | Smartnet', $title),
                 'seo_description' => $summary,
                 'price_from' => $price, 'price_currency' => 'UZS',
-                'sort_order' => $order, 'is_published' => false,
+                'sort_order' => $order, 'is_published' => true,
             ]);
+            if (! $category->is_published) {
+                $category->update(['is_published' => true]);
+            }
             $categoryIds[$slug] = $category->id;
         }
 
@@ -53,14 +56,20 @@ class CatalogSeeder extends Seeder
         foreach ($services as $order => [$slug, $categorySlug, $titles, $summaries, $price]) {
             $title = array_combine(['ru', 'uz', 'en'], $titles);
             $summary = array_combine(['ru', 'uz', 'en'], $summaries);
-            Service::firstOrCreate(['slug' => $slug], [
+            $service = Service::firstOrCreate(['slug' => $slug], [
                 'service_category_id' => $categoryIds[$categorySlug],
                 'title' => $title, 'summary' => $summary,
                 'seo_title' => array_map(fn (string $value) => $value.' | Smartnet', $title),
                 'seo_description' => $summary,
                 'price_from' => $price, 'price_currency' => 'UZS',
-                'sort_order' => $order, 'is_published' => false,
+                'sort_order' => $order, 'is_published' => true,
             ]);
+            if (! $service->is_published) {
+                $service->update(['is_published' => true]);
+            }
+            if (blank($service->image_path)) {
+                $service->update(['image_path' => '/images/services/'.$slug.'.png']);
+            }
         }
     }
 }

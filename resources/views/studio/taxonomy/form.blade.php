@@ -4,7 +4,7 @@
 @section('content')
 <a class="text-sm font-semibold text-violet-700" href="{{ route('studio.resources.index', $resource) }}">← К списку</a>
 <h1 class="mt-4 text-4xl font-black">{{ $item->exists ? 'Редактировать' : 'Добавить' }} {{ $label }}</h1>
-<form method="post" action="{{ $item->exists ? route('studio.resources.update', [$resource, $item->id]) : route('studio.resources.store', $resource) }}" class="mt-8 max-w-2xl space-y-6 rounded-2xl bg-white p-8 shadow-sm">
+<form method="post" enctype="multipart/form-data" action="{{ $item->exists ? route('studio.resources.update', [$resource, $item->id]) : route('studio.resources.store', $resource) }}" class="mt-8 max-w-2xl space-y-6 rounded-2xl bg-white p-8 shadow-sm">
     @csrf
     @if($item->exists) @method('PUT') @endif
     @if($resource === 'categories')
@@ -25,6 +25,7 @@
             </select>
         </label>
         @include('studio.resources.price-fields')
+        @include('studio.resources.image-field')
         @foreach(['ru' => 'Русский', 'uz' => 'O‘zbekcha', 'en' => 'English'] as $locale => $caption)
             <fieldset class="space-y-4 rounded-xl border border-slate-200 p-5"><legend class="px-2 font-bold">{{ $caption }} · страница категории</legend>
                 <label class="block text-sm font-semibold">Краткое описание<textarea name="summary_{{ $locale }}" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('summary_'.$locale, $item->summary[$locale] ?? '') }}</textarea></label>

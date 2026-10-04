@@ -24,8 +24,103 @@
     will-change: transform;
 }
 
+.hero-visual {
+    position: relative;
+    isolation: isolate;
+    padding: 2rem 0;
+}
+
+.hero-orbit {
+    position: absolute;
+    inset: 1rem;
+    border: 1px solid rgb(139 92 246 / 0.28);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-orbit-one {
+    transform: rotate(-22deg) scale(1.16, 0.75);
+}
+
+.hero-orbit-two {
+    transform: rotate(36deg) scale(1.04, 0.86);
+}
+
+.hero-sphere {
+    position: absolute;
+    z-index: 2;
+    top: -1rem;
+    right: 1rem;
+    width: 5rem;
+    aspect-ratio: 1;
+    border: 1px solid rgb(255 255 255 / 0.8);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #fff, #c4b5fd 42%, #7c3aed 75%);
+    box-shadow: 0 18px 40px rgb(109 40 217 / 0.2);
+    pointer-events: none;
+}
+
+.cta-orbit {
+    position: absolute;
+    inset: -9rem -3rem auto auto;
+    width: 27rem;
+    aspect-ratio: 1;
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3rem rgb(255 255 255 / 0.06), 0 0 0 7rem rgb(255 255 255 / 0.04);
+    pointer-events: none;
+}
+
 @media (pointer: coarse), (prefers-reduced-motion: reduce) {
     .hero-cursor-glow {
         will-change: auto;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .site-interactive :is(a, button) {
+        transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease,
+            box-shadow 220ms ease, text-decoration-color 220ms ease, filter 220ms ease;
+    }
+
+    .motion-ready [data-reveal] {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 600ms ease-out var(--reveal-delay, 0ms),
+            transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms),
+            color 220ms ease, background-color 220ms ease, border-color 220ms ease,
+            box-shadow 220ms ease, text-decoration-color 220ms ease, filter 220ms ease;
+    }
+
+    .motion-ready [data-reveal].is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.site-interactive a:not([class*="rounded"]) {
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+}
+
+@media (hover: hover) {
+    .site-interactive a:not([class*="rounded"]):hover {
+        text-decoration-color: currentColor;
+    }
+
+    .site-interactive :is(a, button)[class*="rounded"]:hover {
+        filter: brightness(0.94);
+    }
+}
+
+.site-interactive :is(a, button):focus-visible {
+    outline: 2px solid #7c3aed;
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-interactive :is(a, button) {
+        transition: none;
     }
 }

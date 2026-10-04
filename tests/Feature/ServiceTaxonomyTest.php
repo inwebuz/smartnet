@@ -27,8 +27,7 @@ class ServiceTaxonomyTest extends TestCase
         $root = ServiceCategory::where('slug', 'web')->firstOrFail();
         $this->post('/studio/categories', ['slug' => 'shops', 'title_ru' => 'Магазины', 'title_uz' => 'Do‘konlar', 'parent_id' => $root->id, 'sort_order' => 0])->assertRedirect();
         $child = ServiceCategory::where('slug', 'shops')->firstOrFail();
-        $this->post('/studio/technologies', ['name' => 'Laravel', 'slug' => 'laravel', 'kind' => 'backend', 'sort_order' => 0])->assertRedirect();
-        $technology = Technology::firstOrFail();
+        $technology = Technology::where('slug', 'laravel')->firstOrFail();
         $this->post('/studio/services', [
             'slug' => 'shop', 'title_ru' => 'Интернет-магазин', 'title_uz' => 'Internet-do‘kon',
             'summary_ru' => 'Создание магазина', 'summary_uz' => 'Do‘kon yaratish',

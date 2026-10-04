@@ -27,6 +27,8 @@
         ? (($translatedItem->seo_description[$locale] ?? null) ?: ($translatedItem->summary[$locale] ?? $navigation['description']))
         : ($pageDescriptions[$locale][$routeName] ?? $navigation['description']);
     $organization = array_filter(['@context' => 'https://schema.org', '@type' => 'Organization', 'name' => 'Smartnet', 'url' => route('site.home', 'ru'), 'email' => data_get($settings, 'email.text'), 'telephone' => data_get($settings, 'phone.text')]);
+    $contactPhone = trim((string) data_get($settings, 'phone.text'));
+    $telegramUsername = ltrim(trim((string) data_get($settings, 'telegram.text')), '@');
 @endphp
 <!doctype html>
 <html lang="{{ $locale }}">
@@ -43,19 +45,35 @@
     @endif
     @if (is_file(public_path('hot')) || is_file(public_path('build/manifest.json'))) @vite(['resources/css/app.css', 'resources/js/app.js']) @endif
 </head>
-<body class="bg-[#f7f8fc] text-slate-900 antialiased">
+<body class="site-interactive bg-[#f7f8fc] text-slate-900 antialiased">
     <div class="min-h-screen overflow-hidden">
         <header class="relative z-10 border-b border-slate-200/70 bg-white/80 backdrop-blur">
-            <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10" aria-label="Navigation">
+            @if($contactPhone !== '' || $telegramUsername !== '')
+                <div class="bg-slate-950 py-2 text-white">
+                    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-sm font-semibold sm:justify-end lg:px-10">
+                        @if($contactPhone !== '')
+                            <a class="inline-flex items-center gap-2 hover:text-violet-300" href="tel:{{ preg_replace('/[^\d+]/', '', $contactPhone) }}">{{ $contactPhone }}</a>
+                        @endif
+                        @if($telegramUsername !== '')
+                            <a class="inline-flex items-center gap-2 hover:text-violet-300" href="https://t.me/{{ rawurlencode($telegramUsername) }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram: {{ '@'.$telegramUsername }}">
+                                <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.6a1.5 1.5 0 0 0-1.8-.2L2.7 11a1.4 1.4 0 0 0 .1 2.7l4.4 1.4 1.7 5.1a1.4 1.4 0 0 0 2.4.5l2.5-2.6 4.4 3.2a1.5 1.5 0 0 0 2.3-.9L22.4 6a1.5 1.5 0 0 0-.5-1.4ZM9.7 14.7l8.1-6.4-6.4 7.8-.8 2.1-.9-3.5Z"/></svg>
+                                <span>{{ '@'.$telegramUsername }}</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+            <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5 lg:px-10" aria-label="Navigation">
                 <a href="{{ route('site.home', $locale) }}" class="text-2xl font-black tracking-tight text-slate-950">smartnet<span class="text-violet-600">.</span></a>
-                <div class="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+                <div class="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
                     @foreach(['services', 'cases', 'contact'] as $page)<a class="hover:text-violet-700" href="{{ route('site.'.$page, $locale) }}">{{ $navigation[$page] }}</a>@endforeach
                 </div>
                 <div class="flex items-center gap-3">
                     @foreach($availableLocales as $language)
                         @if($language !== $locale)<a class="text-sm font-semibold text-slate-500 hover:text-slate-900" href="{{ $localizedUrl($language) }}" lang="{{ $language }}">{{ strtoupper($language) }}</a>@endif
                     @endforeach
-                    <a href="{{ route('site.contact', $locale) }}" class="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700">{{ $navigation['cta'] }}</a>
+                    <a href="{{ route('site.contact', $locale) }}" class="hidden whitespace-nowrap rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700 sm:inline-flex">{{ $navigation['cta'] }}</a>
+                    <a href="{{ route('site.contact', $locale) }}" class="inline-flex rounded-full bg-slate-950 p-3 text-white hover:bg-violet-700 sm:hidden" aria-label="{{ $navigation['cta'] }}"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 5h18v14H3z"/><path d="m3 6 9 7 9-7"/></svg></a>
                 </div>
             </nav>
         </header>

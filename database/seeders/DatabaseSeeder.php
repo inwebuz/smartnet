@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             }
         }
         $this->call(CatalogSeeder::class);
+        $this->call([TechnologySeeder::class, SiteSettingSeeder::class]);
         CaseStudy::firstOrCreate(['slug' => 'your-first-project'], [
             'title' => ['ru' => 'Ваш первый кейс', 'uz' => 'Birinchi loyihangiz'],
             'summary' => ['ru' => 'Замените этот черновик реальным проектом.', 'uz' => 'Bu qoralamani haqiqiy loyiha bilan almashtiring.'],

@@ -1,7 +1,7 @@
 @extends('layouts.studio')
 @php($label = ['clients' => 'Клиент', 'projects' => 'Проект', 'tasks' => 'Задача', 'services' => 'Услуга', 'cases' => 'Кейс'][$resource])
 @section('title', ($item->exists ? 'Изменить ' : 'Новый ') . $label)
-@section('content')<div class="mb-8"><a class="text-sm font-semibold text-violet-700" href="{{ route('studio.resources.index', $resource) }}">← К списку</a><h1 class="mt-4 text-4xl font-black">{{ $item->exists ? 'Редактировать' : 'Добавить' }}: {{ mb_strtolower($label) }}</h1></div><form method="post" action="{{ $item->exists ? route('studio.resources.update', [$resource, $item->id]) : route('studio.resources.store', $resource) }}" class="max-w-3xl space-y-6 rounded-2xl bg-white p-8 shadow-sm">@csrf @if($item->exists)@method('PUT')@endif
+@section('content')<div class="mb-8"><a class="text-sm font-semibold text-violet-700" href="{{ route('studio.resources.index', $resource) }}">← К списку</a><h1 class="mt-4 text-4xl font-black">{{ $item->exists ? 'Редактировать' : 'Добавить' }}: {{ mb_strtolower($label) }}</h1></div><form method="post" enctype="multipart/form-data" action="{{ $item->exists ? route('studio.resources.update', [$resource, $item->id]) : route('studio.resources.store', $resource) }}" class="max-w-3xl space-y-6 rounded-2xl bg-white p-8 shadow-sm">@csrf @if($item->exists)@method('PUT')@endif
 @if($resource === 'clients')
     <div class="grid gap-5 md:grid-cols-2">@foreach(['name' => 'Имя / контакт', 'company' => 'Компания', 'email' => 'Email', 'phone' => 'Телефон'] as $field => $text)<label class="block text-sm font-semibold">{{ $text }}<input name="{{ $field }}" value="{{ old($field, $item->$field) }}" @if($field === 'name')required @endif class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>@endforeach</div><label class="block text-sm font-semibold">Заметки<textarea name="notes" rows="5" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('notes', $item->notes) }}</textarea></label>
 @elseif($resource === 'projects' || $resource === 'tasks')
@@ -15,7 +15,7 @@
 @if($resource === 'cases')<label class="block text-sm font-semibold">Путь к изображению (необязательно)<input name="image_path" value="{{ old('image_path', $item->image_path) }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>@endif
 @endif
 @if(in_array($resource, ['services', 'cases'], true))
-    @if($resource === 'services') @include('studio.resources.price-fields') @endif
+    @if($resource === 'services') @include('studio.resources.price-fields') @include('studio.resources.image-field') @endif
     @include('studio.resources.technology-fields')
 @endif
 <button class="rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white">Сохранить</button></form>@if($item->exists)<div class="mt-6 flex flex-wrap gap-3">@if(in_array($resource, ['services', 'cases']))@can('publish', $item)<form method="post" action="{{ route('studio.resources.publish', [$resource, $item->id]) }}">@csrf<button class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">{{ $item->is_published ? 'Снять с публикации' : 'Опубликовать' }}</button></form>@endcan @endif @can('delete', $item)<form method="post" action="{{ route('studio.resources.destroy', [$resource, $item->id]) }}" onsubmit="return confirm('Удалить запись?')">@csrf @method('DELETE')<button class="rounded-xl border border-red-200 px-5 py-3 text-sm font-semibold text-red-700">Удалить</button></form>@endcan</div>@endif @endsection
