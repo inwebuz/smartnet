@@ -19,6 +19,8 @@ x-php: &php
 services:
   db:
     image: mariadb:11.4
+    ports:
+      - "127.0.0.1:${DB_FORWARD_PORT:-13306}:3306"
     environment:
       MARIADB_DATABASE: ${DB_DATABASE:-smartnet}
       MARIADB_USER: ${DB_USERNAME:-smartnet}
