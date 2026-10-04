@@ -15,7 +15,7 @@ class EnglishSeoTest extends TestCase
 
     public function test_english_pages_and_contact_request_work(): void
     {
-        $this->get('/en')->assertOk()->assertSee('Digital experiences built to work for you.')->assertSee('hreflang="ru"', false);
+        $this->get('/en')->assertOk()->assertSee('Web-sites, telegram bots, and other systems development')->assertSee('hreflang="ru"', false);
         $this->get('/en/services')->assertOk()->assertSee('Our services');
         $this->get('/en/cases')->assertOk()->assertSee('Our work');
         $this->get('/en/contact')->assertOk()->assertSee('Send request');

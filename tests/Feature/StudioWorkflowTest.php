@@ -21,8 +21,8 @@ class StudioWorkflowTest extends TestCase
     public function test_public_site_has_two_languages_and_only_published_content(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $this->get('/ru')->assertOk()->assertSee('Создаём цифровое присутствие');
-        $this->get('/uz')->assertOk()->assertSee('raqamli makon');
+        $this->get('/ru')->assertOk()->assertSee('Разработка сайтов, телеграм ботов');
+        $this->get('/uz')->assertOk()->assertSee('Telegram botlar');
         $this->get('/ru/cases')->assertOk()->assertDontSee('Ваш первый кейс');
         $this->get('/ru/cases/your-first-project')->assertNotFound();
         $owner = User::factory()->create(['is_owner' => true]);
