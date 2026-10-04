@@ -44,19 +44,32 @@ class PublicSiteController extends Controller
         $model = $type === 'services' ? Service::class : CaseStudy::class;
         $item = $model::with($type === 'services' ? ['category.parent', 'technologies'] : ['technologies'])
             ->where('slug', $slug)->where('is_published', true)->firstOrFail();
+        if ($locale === 'en' && blank($item->title['en'] ?? null)) {
+            abort(404);
+        }
 
         return view('site.detail', array_merge($this->data($locale), compact('item', 'type')));
     }
 
+    public function sitemap()
+    {
+        return response()->view('site.sitemap', [
+            'services' => Service::where('is_published', true)->get(),
+            'cases' => CaseStudy::where('is_published', true)->get(),
+        ])->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
+
     private function data(string $locale): array
     {
-        abort_unless(in_array($locale, ['ru', 'uz'], true), 404);
+        abort_unless(in_array($locale, ['ru', 'uz', 'en'], true), 404);
         app()->setLocale($locale);
 
         return [
             'locale' => $locale,
-            'services' => Service::with(['category.parent', 'technologies'])->where('is_published', true)->orderBy('sort_order')->get(),
-            'cases' => CaseStudy::with('technologies')->where('is_published', true)->orderBy('sort_order')->get(),
+            'services' => Service::with(['category.parent', 'technologies'])->where('is_published', true)->orderBy('sort_order')->get()
+                ->filter(fn (Service $service) => $locale !== 'en' || filled($service->title['en'] ?? null)),
+            'cases' => CaseStudy::with('technologies')->where('is_published', true)->orderBy('sort_order')->get()
+                ->filter(fn (CaseStudy $case) => $locale !== 'en' || filled($case->title['en'] ?? null)),
             'categories' => ServiceCategory::with('parent')->orderBy('sort_order')->get(),
             'settings' => SiteSetting::all()->pluck('value', 'key'),
         ];

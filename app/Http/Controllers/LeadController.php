@@ -15,7 +15,7 @@ class LeadController extends Controller
 {
     public function storePublic(Request $request, string $locale)
     {
-        abort_unless(in_array($locale, ['ru', 'uz'], true), 404);
+        abort_unless(in_array($locale, ['ru', 'uz', 'en'], true), 404);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'required_without:phone', 'email', 'max:255'],

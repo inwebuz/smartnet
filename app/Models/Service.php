@@ -22,6 +22,6 @@ class Service extends Model
 
     protected function casts(): array
     {
-        return ['title' => 'array', 'summary' => 'array', 'is_published' => 'boolean'];
+        return ['title' => 'array', 'summary' => 'array', 'seo_title' => 'array', 'seo_description' => 'array', 'is_published' => 'boolean'];
     }
 }

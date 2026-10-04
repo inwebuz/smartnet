@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class ServiceCategory extends Model
 {
@@ -53,7 +54,7 @@ class ServiceCategory extends Model
 
         while ($category !== null && ! isset($seen[$category->id])) {
             $seen[$category->id] = true;
-            $parts[] = $category->title[$locale] ?? $category->title['ru'] ?? '';
+            $parts[] = $category->title[$locale] ?? ($locale === 'en' ? Str::headline($category->slug) : ($category->title['ru'] ?? ''));
             $category = $category->parent;
         }
 

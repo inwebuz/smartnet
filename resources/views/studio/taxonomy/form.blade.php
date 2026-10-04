@@ -13,6 +13,7 @@
                 <label class="block text-sm font-semibold">{{ $caption }}<input required name="title_{{ $locale }}" value="{{ old('title_'.$locale, $item->title[$locale] ?? '') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
             @endforeach
         </div>
+        <label class="block text-sm font-semibold">English name (optional)<input name="title_en" value="{{ old('title_en', $item->title['en'] ?? '') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
         <label class="block text-sm font-semibold">Родительская категория
             <select name="parent_id" class="mt-2 w-full rounded-xl border border-slate-200 p-3">
                 <option value="">Корневая категория</option>

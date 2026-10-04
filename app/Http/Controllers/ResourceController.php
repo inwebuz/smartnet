@@ -140,7 +140,7 @@ class ResourceController extends Controller
             ]),
             'categories' => $request->validate([
                 'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique('service_categories', 'slug')->ignore($id)],
-                'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'],
+                'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'], 'title_en' => ['nullable', 'string', 'max:255'],
                 'parent_id' => ['nullable', 'exists:service_categories,id'],
                 'sort_order' => ['required', 'integer', 'min:0'],
             ]),
@@ -152,9 +152,12 @@ class ResourceController extends Controller
             ]),
             'services', 'cases' => $request->validate([
                 'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique($resource === 'cases' ? 'case_studies' : 'services', 'slug')->ignore($id)],
-                'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'],
+                'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'], 'title_en' => ['nullable', 'string', 'max:255'],
                 'summary_ru' => ['required', 'string', 'max:1000'], 'summary_uz' => ['required', 'string', 'max:1000'],
-                'description_ru' => ['nullable', 'string'], 'description_uz' => ['nullable', 'string'],
+                'summary_en' => ['nullable', 'required_with:title_en', 'string', 'max:1000'],
+                'description_ru' => ['nullable', 'string'], 'description_uz' => ['nullable', 'string'], 'description_en' => ['nullable', 'string'],
+                'seo_title_ru' => ['nullable', 'string', 'max:255'], 'seo_title_uz' => ['nullable', 'string', 'max:255'], 'seo_title_en' => ['nullable', 'string', 'max:255'],
+                'seo_description_ru' => ['nullable', 'string', 'max:500'], 'seo_description_uz' => ['nullable', 'string', 'max:500'], 'seo_description_en' => ['nullable', 'string', 'max:500'],
                 'sort_order' => ['required', 'integer', 'min:0'],
                 'image_path' => ['nullable', 'string', 'max:255'],
                 'service_category_id' => $resource === 'services' ? ['nullable', 'exists:service_categories,id'] : ['prohibited'],
@@ -166,13 +169,18 @@ class ResourceController extends Controller
             if ($id !== null && ($data['parent_id'] ?? null) !== null && in_array((int) $data['parent_id'], ServiceCategory::findOrFail($id)->subtreeIds(), true)) {
                 throw ValidationException::withMessages(['parent_id' => 'Нельзя выбрать эту категорию родительской.']);
             }
-            $data['title'] = ['ru' => $data['title_ru'], 'uz' => $data['title_uz']];
-            unset($data['title_ru'], $data['title_uz']);
+            $data['title'] = array_filter(['ru' => $data['title_ru'], 'uz' => $data['title_uz'], 'en' => $data['title_en'] ?? null], fn ($value) => filled($value));
+            unset($data['title_ru'], $data['title_uz'], $data['title_en']);
         }
         if (in_array($resource, ['services', 'cases'], true)) {
-            $data['title'] = ['ru' => $data['title_ru'], 'uz' => $data['title_uz']];
-            $data['summary'] = ['ru' => $data['summary_ru'], 'uz' => $data['summary_uz']];
-            unset($data['title_ru'], $data['title_uz'], $data['summary_ru'], $data['summary_uz']);
+            $data['title'] = array_filter(['ru' => $data['title_ru'], 'uz' => $data['title_uz'], 'en' => $data['title_en'] ?? null], fn ($value) => filled($value));
+            $data['summary'] = array_filter(['ru' => $data['summary_ru'], 'uz' => $data['summary_uz'], 'en' => $data['summary_en'] ?? null], fn ($value) => filled($value));
+            $data['seo_title'] = array_filter(['ru' => $data['seo_title_ru'] ?? null, 'uz' => $data['seo_title_uz'] ?? null, 'en' => $data['seo_title_en'] ?? null], fn ($value) => filled($value));
+            $data['seo_description'] = array_filter(['ru' => $data['seo_description_ru'] ?? null, 'uz' => $data['seo_description_uz'] ?? null, 'en' => $data['seo_description_en'] ?? null], fn ($value) => filled($value));
+            unset($data['title_ru'], $data['title_uz'], $data['title_en'], $data['summary_ru'], $data['summary_uz'], $data['summary_en']);
+            foreach (['ru', 'uz', 'en'] as $locale) {
+                unset($data['seo_title_'.$locale], $data['seo_description_'.$locale]);
+            }
             if ($resource === 'services') {
                 unset($data['image_path']);
             } else {
@@ -230,7 +238,7 @@ class ResourceController extends Controller
         $data = $request->validate([
             'email' => ['nullable', 'email', 'max:255'], 'phone' => ['nullable', 'string', 'max:50'],
             'telegram' => ['nullable', 'string', 'max:255'],
-            'location_ru' => ['nullable', 'string', 'max:255'], 'location_uz' => ['nullable', 'string', 'max:255'],
+            'location_ru' => ['nullable', 'string', 'max:255'], 'location_uz' => ['nullable', 'string', 'max:255'], 'location_en' => ['nullable', 'string', 'max:255'],
         ]);
         foreach ($data as $key => $value) {
             SiteSetting::updateOrCreate(['key' => $key], ['value' => ['text' => $value]]);

@@ -40,7 +40,9 @@ Route::prefix('studio')->name('studio.')->middleware(['auth', EnsurePasswordChan
     Route::delete('/{resource}/{id}', [ResourceController::class, 'destroy'])->name('resources.destroy');
 });
 
-Route::prefix('{locale}')->where(['locale' => 'ru|uz'])->name('site.')->group(function (): void {
+Route::get('/sitemap.xml', [PublicSiteController::class, 'sitemap'])->name('sitemap');
+
+Route::prefix('{locale}')->where(['locale' => 'ru|uz|en'])->name('site.')->group(function (): void {
     Route::get('/', [PublicSiteController::class, 'home'])->name('home');
     Route::get('/services', [PublicSiteController::class, 'services'])->name('services');
     Route::get('/cases', [PublicSiteController::class, 'cases'])->name('cases');
