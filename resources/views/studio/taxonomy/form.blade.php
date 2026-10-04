@@ -24,6 +24,15 @@
                 @endforeach
             </select>
         </label>
+        @include('studio.resources.price-fields')
+        @foreach(['ru' => 'Русский', 'uz' => 'O‘zbekcha', 'en' => 'English'] as $locale => $caption)
+            <fieldset class="space-y-4 rounded-xl border border-slate-200 p-5"><legend class="px-2 font-bold">{{ $caption }} · страница категории</legend>
+                <label class="block text-sm font-semibold">Краткое описание<textarea name="summary_{{ $locale }}" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('summary_'.$locale, $item->summary[$locale] ?? '') }}</textarea></label>
+                <label class="block text-sm font-semibold">Полное описание<textarea name="description_{{ $locale }}" rows="4" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('description_'.$locale, $item->{'description_'.$locale}) }}</textarea></label>
+                <label class="block text-sm font-semibold">SEO title<input name="seo_title_{{ $locale }}" value="{{ old('seo_title_'.$locale, $item->seo_title[$locale] ?? '') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
+                <label class="block text-sm font-semibold">SEO description<textarea name="seo_description_{{ $locale }}" rows="2" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('seo_description_'.$locale, $item->seo_description[$locale] ?? '') }}</textarea></label>
+            </fieldset>
+        @endforeach
     @else
         <label class="block text-sm font-semibold">Название технологии<input required name="name" value="{{ old('name', $item->name) }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
         <label class="block text-sm font-semibold">Направление
@@ -41,6 +50,9 @@
     <button class="rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white">Сохранить</button>
 </form>
 @if($item->exists)
+    @if($resource === 'categories')
+        @can('publish', $item)<form method="post" action="{{ route('studio.resources.publish', [$resource, $item->id]) }}" class="mt-5">@csrf<button class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">{{ $item->is_published ? 'Снять с публикации' : 'Опубликовать категорию' }}</button></form>@endcan
+    @endif
     @can('delete', $item)
         <form method="post" action="{{ route('studio.resources.destroy', [$resource, $item->id]) }}" class="mt-5" onsubmit="return confirm('Удалить запись?')">
             @csrf @method('DELETE')

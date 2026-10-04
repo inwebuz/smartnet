@@ -38,11 +38,13 @@ class ServiceTaxonomyTest extends TestCase
         $this->assertSame($child->id, $service->service_category_id);
         $this->assertTrue($service->technologies->contains($technology));
         $this->post("/studio/services/{$service->id}/publish")->assertRedirect();
+        $this->post("/studio/categories/{$root->id}/publish")->assertRedirect();
+        $this->post("/studio/categories/{$child->id}/publish")->assertRedirect();
 
         $this->get('/ru/services?category=web')->assertOk()->assertSee('Интернет-магазин')->assertSee('Веб / Магазины')->assertSee('Laravel');
         $this->get('/uz/services?category=shops')->assertOk()->assertSee('Internet-do‘kon')->assertSee('Veb / Do‘konlar');
         $this->get('/ru/services/shop')->assertOk()->assertSee('Стек технологий')->assertSee('Laravel');
-        $this->assertNull(Service::where('slug', 'web-development')->firstOrFail()->service_category_id);
+        $this->assertNotNull(Service::where('slug', 'landing-page')->firstOrFail()->service_category_id);
     }
 
     public function test_categories_cannot_form_cycles_or_be_deleted_while_in_use(): void

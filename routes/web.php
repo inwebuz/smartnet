@@ -48,5 +48,6 @@ Route::prefix('{locale}')->where(['locale' => 'ru|uz|en'])->name('site.')->group
     Route::get('/cases', [PublicSiteController::class, 'cases'])->name('cases');
     Route::get('/contact', [PublicSiteController::class, 'contact'])->name('contact');
     Route::post('/contact', [LeadController::class, 'storePublic'])->middleware('throttle:5,1')->name('contact.submit');
+    Route::get('/service-categories/{slug}', [PublicSiteController::class, 'category'])->name('category');
     Route::get('/{type}/{slug}', [PublicSiteController::class, 'detail'])->where(['type' => 'services|cases'])->name('detail');
 });

@@ -21,7 +21,7 @@ class PublicSiteController extends Controller
         $selectedCategory = null;
 
         if ($request->filled('category')) {
-            $selectedCategory = ServiceCategory::where('slug', $request->query('category'))->firstOrFail();
+            $selectedCategory = ServiceCategory::where('slug', $request->query('category'))->where('is_published', true)->firstOrFail();
             $data['services'] = $data['services']->whereIn('service_category_id', $selectedCategory->subtreeIds());
         }
 
@@ -51,9 +51,24 @@ class PublicSiteController extends Controller
         return view('site.detail', array_merge($this->data($locale), compact('item', 'type')));
     }
 
+    public function category(string $locale, string $slug)
+    {
+        $category = ServiceCategory::with('parent')->where('slug', $slug)->where('is_published', true)->firstOrFail();
+        if ($locale === 'en' && blank($category->title['en'] ?? null)) {
+            abort(404);
+        }
+
+        $data = $this->data($locale);
+        $services = $data['services']->whereIn('service_category_id', $category->subtreeIds());
+        $children = $data['categories']->where('parent_id', $category->id);
+
+        return view('site.category', array_merge($data, compact('category', 'services', 'children')));
+    }
+
     public function sitemap()
     {
         return response()->view('site.sitemap', [
+            'categories' => ServiceCategory::where('is_published', true)->get(),
             'services' => Service::where('is_published', true)->get(),
             'cases' => CaseStudy::where('is_published', true)->get(),
         ])->header('Content-Type', 'application/xml; charset=UTF-8');
@@ -70,7 +85,8 @@ class PublicSiteController extends Controller
                 ->filter(fn (Service $service) => $locale !== 'en' || filled($service->title['en'] ?? null)),
             'cases' => CaseStudy::with('technologies')->where('is_published', true)->orderBy('sort_order')->get()
                 ->filter(fn (CaseStudy $case) => $locale !== 'en' || filled($case->title['en'] ?? null)),
-            'categories' => ServiceCategory::with('parent')->orderBy('sort_order')->get(),
+            'categories' => ServiceCategory::with('parent')->where('is_published', true)->orderBy('sort_order')->get()
+                ->filter(fn (ServiceCategory $category) => $locale !== 'en' || filled($category->title['en'] ?? null)),
             'settings' => SiteSetting::all()->pluck('value', 'key'),
         ];
     }

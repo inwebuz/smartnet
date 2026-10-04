@@ -143,6 +143,11 @@ class ResourceController extends Controller
                 'title_ru' => ['required', 'string', 'max:255'], 'title_uz' => ['required', 'string', 'max:255'], 'title_en' => ['nullable', 'string', 'max:255'],
                 'parent_id' => ['nullable', 'exists:service_categories,id'],
                 'sort_order' => ['required', 'integer', 'min:0'],
+                'summary_ru' => ['nullable', 'string', 'max:1000'], 'summary_uz' => ['nullable', 'string', 'max:1000'], 'summary_en' => ['nullable', 'string', 'max:1000'],
+                'description_ru' => ['nullable', 'string'], 'description_uz' => ['nullable', 'string'], 'description_en' => ['nullable', 'string'],
+                'seo_title_ru' => ['nullable', 'string', 'max:255'], 'seo_title_uz' => ['nullable', 'string', 'max:255'], 'seo_title_en' => ['nullable', 'string', 'max:255'],
+                'seo_description_ru' => ['nullable', 'string', 'max:500'], 'seo_description_uz' => ['nullable', 'string', 'max:500'], 'seo_description_en' => ['nullable', 'string', 'max:500'],
+                'price_from' => ['nullable', 'integer', 'min:0'], 'price_currency' => ['sometimes', Rule::in(['UZS', 'USD', 'EUR', 'RUB'])],
             ]),
             'technologies' => $request->validate([
                 'name' => ['required', 'string', 'max:255'],
@@ -161,6 +166,8 @@ class ResourceController extends Controller
                 'sort_order' => ['required', 'integer', 'min:0'],
                 'image_path' => ['nullable', 'string', 'max:255'],
                 'service_category_id' => $resource === 'services' ? ['nullable', 'exists:service_categories,id'] : ['prohibited'],
+                'price_from' => $resource === 'services' ? ['nullable', 'integer', 'min:0'] : ['prohibited'],
+                'price_currency' => $resource === 'services' ? ['sometimes', Rule::in(['UZS', 'USD', 'EUR', 'RUB'])] : ['prohibited'],
                 'technology_ids' => ['sometimes', 'array'],
                 'technology_ids.*' => ['integer', 'distinct', 'exists:technologies,id'],
             ]),
@@ -170,6 +177,12 @@ class ResourceController extends Controller
                 throw ValidationException::withMessages(['parent_id' => 'Нельзя выбрать эту категорию родительской.']);
             }
             $data['title'] = array_filter(['ru' => $data['title_ru'], 'uz' => $data['title_uz'], 'en' => $data['title_en'] ?? null], fn ($value) => filled($value));
+            foreach (['summary', 'seo_title', 'seo_description'] as $field) {
+                $data[$field] = array_filter(['ru' => $data[$field.'_ru'] ?? null, 'uz' => $data[$field.'_uz'] ?? null, 'en' => $data[$field.'_en'] ?? null], fn ($value) => filled($value));
+                foreach (['ru', 'uz', 'en'] as $locale) {
+                    unset($data[$field.'_'.$locale]);
+                }
+            }
             unset($data['title_ru'], $data['title_uz'], $data['title_en']);
         }
         if (in_array($resource, ['services', 'cases'], true)) {
@@ -184,7 +197,7 @@ class ResourceController extends Controller
             if ($resource === 'services') {
                 unset($data['image_path']);
             } else {
-                unset($data['service_category_id']);
+                unset($data['service_category_id'], $data['price_from'], $data['price_currency']);
             }
         }
         if (array_key_exists('assignee_id', $data) && $data['assignee_id'] !== null) {
@@ -217,7 +230,7 @@ class ResourceController extends Controller
 
     public function publish(string $resource, int $id)
     {
-        abort_unless(in_array($resource, ['services', 'cases'], true), 404);
+        abort_unless(in_array($resource, ['services', 'categories', 'cases'], true), 404);
         $item = $this->model($resource)::findOrFail($id);
         Gate::authorize('publish', $item);
         $item->update(['is_published' => ! $item->is_published]);

@@ -15,6 +15,7 @@
 @if($resource === 'cases')<label class="block text-sm font-semibold">Путь к изображению (необязательно)<input name="image_path" value="{{ old('image_path', $item->image_path) }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>@endif
 @endif
 @if(in_array($resource, ['services', 'cases'], true))
+    @if($resource === 'services') @include('studio.resources.price-fields') @endif
     @include('studio.resources.technology-fields')
 @endif
 <button class="rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white">Сохранить</button></form>@if($item->exists)<div class="mt-6 flex flex-wrap gap-3">@if(in_array($resource, ['services', 'cases']))@can('publish', $item)<form method="post" action="{{ route('studio.resources.publish', [$resource, $item->id]) }}">@csrf<button class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">{{ $item->is_published ? 'Снять с публикации' : 'Опубликовать' }}</button></form>@endcan @endif @can('delete', $item)<form method="post" action="{{ route('studio.resources.destroy', [$resource, $item->id]) }}" onsubmit="return confirm('Удалить запись?')">@csrf @method('DELETE')<button class="rounded-xl border border-red-200 px-5 py-3 text-sm font-semibold text-red-700">Удалить</button></form>@endcan</div>@endif @endsection

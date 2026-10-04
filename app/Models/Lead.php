@@ -17,6 +17,11 @@ class Lead extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ServiceCategory::class, 'service_category_id');
+    }
+
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assignee_id');

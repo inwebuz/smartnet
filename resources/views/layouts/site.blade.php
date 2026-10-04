@@ -10,19 +10,21 @@
             'site.services' => route('site.services', $language),
             'site.cases' => route('site.cases', $language),
             'site.contact' => route('site.contact', $language),
+            'site.category' => route('site.category', [$language, request()->route('slug')]),
             'site.detail' => route('site.detail', [$language, request()->route('type'), request()->route('slug')]),
             default => route('site.home', $language),
         };
     };
     $canonicalUrl = $localizedUrl($locale);
-    $availableLocales = $routeName === 'site.detail' && blank(($item ?? null)?->title['en'] ?? null) ? ['ru', 'uz'] : ['ru', 'uz', 'en'];
+    $translatedItem = $routeName === 'site.category' ? ($category ?? null) : ($item ?? null);
+    $availableLocales = in_array($routeName, ['site.detail', 'site.category'], true) && blank($translatedItem?->title['en'] ?? null) ? ['ru', 'uz'] : ['ru', 'uz', 'en'];
     $pageDescriptions = [
         'ru' => ['site.home' => 'Smartnet разрабатывает сайты и цифровые продукты с удобным дизайном и ясной целью.', 'site.services' => 'Услуги Smartnet: разработка сайтов, дизайн и цифровые решения для бизнеса.', 'site.cases' => 'Кейсы Smartnet: задачи, решения и результаты цифровых проектов.', 'site.contact' => 'Свяжитесь со Smartnet, чтобы обсудить разработку сайта или цифрового продукта.'],
         'uz' => ['site.home' => 'Smartnet qulay dizayn va aniq maqsadga ega veb-saytlar yaratadi.', 'site.services' => 'Smartnet xizmatlari: veb-sayt yaratish, dizayn va biznes uchun raqamli yechimlar.', 'site.cases' => 'Smartnet loyihalari: vazifalar, yechimlar va natijalar.', 'site.contact' => 'Veb-sayt yoki raqamli loyiha haqida gaplashish uchun Smartnet bilan bog‘laning.'],
         'en' => ['site.home' => 'Smartnet designs and develops purposeful websites and digital products.', 'site.services' => 'Explore Smartnet services in web development, design, and digital products.', 'site.cases' => 'Explore Smartnet projects, solutions, and results.', 'site.contact' => 'Contact Smartnet to discuss your website or digital product.'],
     ];
-    $description = $routeName === 'site.detail'
-        ? (($item->seo_description[$locale] ?? null) ?: ($item->summary[$locale] ?? $navigation['description']))
+    $description = in_array($routeName, ['site.detail', 'site.category'], true)
+        ? (($translatedItem->seo_description[$locale] ?? null) ?: ($translatedItem->summary[$locale] ?? $navigation['description']))
         : ($pageDescriptions[$locale][$routeName] ?? $navigation['description']);
     $organization = array_filter(['@context' => 'https://schema.org', '@type' => 'Organization', 'name' => 'Smartnet', 'url' => route('site.home', 'ru'), 'email' => data_get($settings, 'email.text'), 'telephone' => data_get($settings, 'phone.text')]);
 @endphp

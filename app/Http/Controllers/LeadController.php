@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Lead;
 use App\Models\Project;
+use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,11 +23,26 @@ class LeadController extends Controller
             'email' => ['nullable', 'required_without:phone', 'email', 'max:255'],
             'phone' => ['nullable', 'required_without:email', 'string', 'max:50'],
             'service_id' => ['nullable', Rule::exists('services', 'id')->where('is_published', true)],
+            'service_category_id' => ['nullable', Rule::exists('service_categories', 'id')->where('is_published', true)],
+            'return_page' => ['nullable', Rule::in(['service', 'category'])],
             'message' => ['required', 'string', 'min:10', 'max:5000'],
             'website' => ['nullable', 'size:0'],
         ]);
         unset($data['website']);
+        $returnPage = $data['return_page'] ?? null;
+        unset($data['return_page']);
         Lead::create($data + ['locale' => $locale]);
+
+        if ($returnPage === 'service' && ! empty($data['service_id'])) {
+            $service = Service::findOrFail($data['service_id']);
+
+            return redirect()->route('site.detail', [$locale, 'services', $service->slug])->with('success', true);
+        }
+        if ($returnPage === 'category' && ! empty($data['service_category_id'])) {
+            $category = ServiceCategory::findOrFail($data['service_category_id']);
+
+            return redirect()->route('site.category', [$locale, $category->slug])->with('success', true);
+        }
 
         return redirect()->route('site.contact', $locale)->with('success', true);
     }
@@ -34,14 +51,14 @@ class LeadController extends Controller
     {
         Gate::authorize('viewAny', Lead::class);
 
-        return view('studio.leads', ['leads' => Lead::with(['service', 'assignee'])->latest()->paginate(20)]);
+        return view('studio.leads', ['leads' => Lead::with(['service', 'category', 'assignee'])->latest()->paginate(20)]);
     }
 
     public function show(Lead $lead)
     {
         Gate::authorize('view', $lead);
 
-        return view('studio.lead', ['lead' => $lead->load(['service', 'assignee', 'client']), 'staff' => User::orderBy('name')->get()]);
+        return view('studio.lead', ['lead' => $lead->load(['service', 'category', 'assignee', 'client']), 'staff' => User::orderBy('name')->get()]);
     }
 
     public function update(Request $request, Lead $lead)

@@ -12,6 +12,7 @@
             <div>
                 <a class="text-lg font-semibold hover:text-violet-700" href="{{ route('studio.resources.edit', [$resource, $item->id]) }}">{{ $resource === 'categories' ? $item->pathTitle('ru') : $item->name }}</a>
                 <p class="mt-1 text-sm text-slate-500">{{ $resource === 'categories' ? $item->slug : ucfirst($item->kind).' · '.$item->slug }}</p>
+                @if($resource === 'categories')<p class="mt-1 text-xs {{ $item->is_published ? 'text-emerald-700' : 'text-amber-700' }}">{{ $item->is_published ? 'Опубликована' : 'Черновик' }} · {{ $item->price_from !== null ? 'от '.number_format($item->price_from, 0, '.', ' ').' '.$item->price_currency : 'цена не указана' }}</p>@endif
             </div>
             @can('update', $item)<a href="{{ route('studio.resources.edit', [$resource, $item->id]) }}" class="text-sm font-semibold text-violet-700">Изменить →</a>@endcan
         </div>

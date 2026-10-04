@@ -27,19 +27,19 @@ class EnglishSeoTest extends TestCase
     public function test_english_content_and_seo_fields_are_managed_in_crm(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $service = Service::where('slug', 'web-development')->firstOrFail();
-        $service->update(['is_published' => true]);
-        $this->get('/en/services')->assertDontSee('web-development');
-        $this->get('/en/services/web-development')->assertNotFound();
+        $service = Service::where('slug', 'corporate-website')->firstOrFail();
+        $service->update(['is_published' => true, 'title' => ['ru' => 'Сайты', 'uz' => 'Saytlar']]);
+        $this->get('/en/services')->assertDontSee('corporate-website');
+        $this->get('/en/services/corporate-website')->assertNotFound();
 
         $this->actingAs(User::factory()->create(['is_owner' => true]));
         $this->put("/studio/services/{$service->id}", [
-            'slug' => 'web-development', 'title_ru' => 'Сайты', 'title_uz' => 'Saytlar', 'title_en' => 'Web development',
+            'slug' => 'corporate-website', 'title_ru' => 'Сайты', 'title_uz' => 'Saytlar', 'title_en' => 'Web development',
             'summary_ru' => 'Создание сайтов', 'summary_uz' => 'Saytlar yaratish', 'summary_en' => 'Websites that work.',
             'seo_title_en' => 'Custom websites | Smartnet', 'seo_description_en' => 'Custom websites for growing companies.',
             'sort_order' => 0,
         ])->assertRedirect();
-        $this->get('/en/services/web-development')->assertOk()
+        $this->get('/en/services/corporate-website')->assertOk()
             ->assertSee('<title>Custom websites | Smartnet</title>', false)
             ->assertSee('content="Custom websites for growing companies."', false)
             ->assertSee('rel="canonical"', false)
@@ -49,9 +49,9 @@ class EnglishSeoTest extends TestCase
     public function test_sitemap_contains_only_published_pages_and_translated_english_details(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $response = $this->get('/sitemap.xml')->assertOk()->assertSee('/en/services')->assertDontSee('/ru/services/web-development');
+        $response = $this->get('/sitemap.xml')->assertOk()->assertSee('/en/services')->assertDontSee('/ru/services/corporate-website');
         $this->assertNotFalse(simplexml_load_string($response->getContent()));
-        Service::where('slug', 'web-development')->firstOrFail()->update(['is_published' => true]);
-        $this->get('/sitemap.xml')->assertSee('/ru/services/web-development')->assertDontSee('/en/services/web-development');
+        Service::where('slug', 'corporate-website')->firstOrFail()->update(['is_published' => true, 'title' => ['ru' => 'Сайты', 'uz' => 'Saytlar']]);
+        $this->get('/sitemap.xml')->assertSee('/ru/services/corporate-website')->assertDontSee('/en/services/corporate-website');
     }
 }

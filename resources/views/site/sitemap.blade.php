@@ -7,6 +7,15 @@
 </url>
 @endforeach
 @endforeach
+@foreach($categories as $category)
+@foreach(['ru', 'uz', 'en'] as $locale)
+@if($locale !== 'en' || filled($category->title['en'] ?? null))
+<url><loc>{{ route('site.category', [$locale, $category->slug]) }}</loc><lastmod>{{ $category->updated_at->toDateString() }}</lastmod>
+@foreach(['ru', 'uz', 'en'] as $other)@if($other !== 'en' || filled($category->title['en'] ?? null))<xhtml:link rel="alternate" hreflang="{{ $other }}" href="{{ route('site.category', [$other, $category->slug]) }}" />@endif @endforeach
+</url>
+@endif
+@endforeach
+@endforeach
 @foreach(['services' => $services, 'cases' => $cases] as $type => $items)
 @foreach($items as $item)
 @foreach(['ru', 'uz', 'en'] as $locale)
