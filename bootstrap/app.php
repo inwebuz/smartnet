@@ -5,8 +5,12 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
-return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(
+$app = Application::configure(basePath: dirname(__DIR__));
+if (env('APP_ENV') === 'production') {
+    $app->withPublicPath(__DIR__.'/../../public_html');
+}
+
+return $app->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
