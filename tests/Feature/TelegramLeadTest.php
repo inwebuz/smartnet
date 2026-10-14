@@ -107,6 +107,6 @@ class TelegramLeadTest extends TestCase
 
     private function leadData(): array
     {
-        return ['name' => 'Ali', 'phone' => '+998339010333', 'message' => 'Yangi sayt kerak.'];
+        return ['name' => 'Ali', 'phone' => '+998339010333', 'message' => 'Hi'];
     }
 }

@@ -16,7 +16,7 @@
         @if($leadService)@include('site.additional-services')@endif
         <label class="block text-sm font-semibold">{{ $formCopy['name'] }}<input required name="name" value="{{ old('name') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
         <label class="block text-sm font-semibold">{{ $formCopy['phone'] }}<input required type="tel" autocomplete="tel" name="phone" value="{{ old('phone') }}" class="mt-2 w-full rounded-xl border border-slate-200 p-3"></label>
-        <label class="block text-sm font-semibold">{{ $formCopy['message'] }}<textarea required minlength="10" name="message" rows="5" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('message') }}</textarea></label>
+        <label class="block text-sm font-semibold">{{ $formCopy['message'] }}<textarea required name="message" rows="5" class="mt-2 w-full rounded-xl border border-slate-200 p-3">{{ old('message') }}</textarea></label>
         <button class="rounded-xl bg-violet-600 px-6 py-4 font-semibold text-white hover:bg-violet-700">{{ $formCopy['submit'] }}</button>
     </form>
 </section>

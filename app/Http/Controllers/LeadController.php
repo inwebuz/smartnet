@@ -28,7 +28,7 @@ class LeadController extends Controller
             'service_id' => ['nullable', Rule::exists('services', 'id')->where('is_published', true)],
             'service_category_id' => ['nullable', Rule::exists('service_categories', 'id')->where('is_published', true)],
             'return_page' => ['nullable', Rule::in(['service', 'category'])],
-            'message' => ['required', 'string', 'min:10', 'max:5000'],
+            'message' => ['required', 'string', 'max:5000'],
             'website' => ['nullable', 'size:0'],
             'additional_service_ids' => ['sometimes', 'array', 'max:30'],
             'additional_service_ids.*' => ['integer', 'distinct'],

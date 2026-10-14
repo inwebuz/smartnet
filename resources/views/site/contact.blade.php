@@ -18,7 +18,7 @@
             <label class="block text-sm font-semibold">{{ $copy['name'] }}<input required name="name" value="{{ old('name') }}" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500"></label>
             <label class="block text-sm font-semibold">{{ $copy['phone'] }}<input required type="tel" autocomplete="tel" name="phone" value="{{ old('phone') }}" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500"></label>
             <label class="block text-sm font-semibold">{{ $copy['service'] }}<select name="service_id" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"><option value="">{{ $copy['unknown'] }}</option>@foreach($services as $service)<option value="{{ $service->id }}" @selected(old('service_id') == $service->id)>{{ $service->title[$locale] }}</option>@endforeach</select></label>
-            <label class="block text-sm font-semibold">{{ $copy['message'] }}<textarea required minlength="10" name="message" rows="5" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500">{{ old('message') }}</textarea></label>
+            <label class="block text-sm font-semibold">{{ $copy['message'] }}<textarea required name="message" rows="5" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500">{{ old('message') }}</textarea></label>
             <button class="w-full rounded-xl bg-violet-600 px-6 py-4 font-semibold text-white hover:bg-violet-700">{{ $copy['submit'] }}</button>
         </form>
     </div>
