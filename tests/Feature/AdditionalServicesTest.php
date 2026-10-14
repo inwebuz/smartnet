@@ -103,7 +103,7 @@ class AdditionalServicesTest extends TestCase
     private function leadData(Service $service, array $optionIds): array
     {
         return [
-            'name' => 'Customer', 'email' => 'customer@example.test', 'message' => 'Please build this service for our team.',
+            'name' => 'Customer', 'phone' => '+998339010333', 'message' => 'Please build this service for our team.',
             'service_id' => $service->id, 'return_page' => 'service', 'additional_service_ids' => $optionIds,
         ];
     }

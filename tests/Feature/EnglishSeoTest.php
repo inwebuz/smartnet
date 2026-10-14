@@ -58,7 +58,7 @@ class EnglishSeoTest extends TestCase
         $this->get('/en/services')->assertOk()->assertSee('Our services');
         $this->get('/en/cases')->assertOk()->assertSee('Our work');
         $this->get('/en/contact')->assertOk()->assertSee('Send request');
-        $this->post('/en/contact', ['name' => 'Jane', 'email' => 'jane@example.test', 'message' => 'We need a new website.'])
+        $this->post('/en/contact', ['name' => 'Jane', 'phone' => '+998339010333', 'message' => 'We need a new website.'])
             ->assertRedirect('/en/contact');
         $this->assertSame('en', Lead::firstOrFail()->locale);
     }

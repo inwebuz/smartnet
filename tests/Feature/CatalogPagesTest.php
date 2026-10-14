@@ -104,12 +104,12 @@ class CatalogPagesTest extends TestCase
         $this->get('/sitemap.xml')->assertSee('/ru/service-categories/websites')->assertSee('/ru/services/landing-page');
 
         $this->post('/ru/contact', [
-            'name' => 'Иван', 'email' => 'ivan@example.test', 'message' => 'Нужна страница для продукта',
+            'name' => 'Иван', 'phone' => '+998339010333', 'message' => 'Нужна страница для продукта',
             'service_category_id' => $category->id, 'return_page' => 'category',
         ])->assertRedirect('/ru/service-categories/websites');
         $this->assertSame($category->id, Lead::firstOrFail()->service_category_id);
         $this->post('/en/contact', [
-            'name' => 'Jane', 'email' => 'jane@example.test', 'message' => 'We need a landing page.',
+            'name' => 'Jane', 'phone' => '+998339010333', 'message' => 'We need a landing page.',
             'service_id' => $service->id, 'return_page' => 'service',
         ])->assertRedirect('/en/services/landing-page');
         $this->assertSame($service->id, Lead::orderByDesc('id')->firstOrFail()->service_id);

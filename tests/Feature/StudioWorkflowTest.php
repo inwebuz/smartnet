@@ -34,13 +34,13 @@ class StudioWorkflowTest extends TestCase
     public function test_contact_request_is_saved_and_can_be_converted_once(): void
     {
         $this->post('/ru/contact', [
-            'name' => 'Иван', 'email' => 'ivan@example.test', 'message' => 'Нужен новый сайт компании',
+            'name' => 'Иван', 'phone' => '+998339010333', 'message' => 'Нужен новый сайт компании',
         ])->assertRedirect('/ru/contact');
         $lead = Lead::firstOrFail();
         $owner = User::factory()->create(['is_owner' => true]);
         $this->actingAs($owner)->post("/studio/leads/{$lead->id}/convert", ['title' => 'Корпоративный сайт'])
             ->assertRedirect(route('studio.resources.index', 'projects'));
-        $this->assertDatabaseHas('clients', ['name' => 'Иван', 'email' => 'ivan@example.test']);
+        $this->assertDatabaseHas('clients', ['name' => 'Иван', 'phone' => '+998339010333']);
         $this->assertDatabaseHas('projects', ['lead_id' => $lead->id, 'title' => 'Корпоративный сайт']);
         $this->post("/studio/leads/{$lead->id}/convert", ['title' => 'Повтор'])->assertStatus(409);
         $this->assertSame(1, Project::count());
@@ -50,7 +50,7 @@ class StudioWorkflowTest extends TestCase
     {
         $this->post('/uz/contact', ['name' => 'Ali', 'message' => 'Yangi sayt kerak'])->assertSessionHasErrors();
         $this->post('/uz/contact', [
-            'name' => 'Ali', 'email' => 'ali@example.test', 'message' => 'Yangi sayt kerak', 'website' => 'spam',
+            'name' => 'Ali', 'phone' => '+998339010333', 'message' => 'Yangi sayt kerak', 'website' => 'spam',
         ])->assertSessionHasErrors('website');
         $this->assertDatabaseCount('leads', 0);
     }

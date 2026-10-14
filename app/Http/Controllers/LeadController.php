@@ -8,21 +8,23 @@ use App\Models\Project;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\User;
+use App\Services\TelegramLeadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class LeadController extends Controller
 {
-    public function storePublic(Request $request, string $locale)
+    public function storePublic(Request $request, string $locale, TelegramLeadService $telegram)
     {
         abort_unless(in_array($locale, ['ru', 'uz', 'en'], true), 404);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'required_without:phone', 'email', 'max:255'],
-            'phone' => ['nullable', 'required_without:email', 'string', 'max:50'],
+            'phone' => ['required', 'string', 'max:50'],
             'service_id' => ['nullable', Rule::exists('services', 'id')->where('is_published', true)],
             'service_category_id' => ['nullable', Rule::exists('service_categories', 'id')->where('is_published', true)],
             'return_page' => ['nullable', Rule::in(['service', 'category'])],
@@ -60,7 +62,14 @@ class LeadController extends Controller
         }
         $returnPage = $data['return_page'] ?? null;
         unset($data['return_page']);
-        Lead::create($data + ['locale' => $locale]);
+        $lead = Lead::create($data + ['locale' => $locale]);
+        if (filled(config('services.telegram.bot_token')) && filled(config('services.telegram.chat_id'))) {
+            try {
+                $telegram->send($lead);
+            } catch (Throwable) {
+                Log::error('Unable to send Telegram lead notification.', ['lead_id' => $lead->id]);
+            }
+        }
 
         if ($returnPage === 'service' && ! empty($data['service_id'])) {
             $service = Service::findOrFail($data['service_id']);
