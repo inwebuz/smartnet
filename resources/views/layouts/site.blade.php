@@ -67,7 +67,7 @@
         '@context' => 'https://schema.org',
         '@type' => 'Organization',
         'name' => 'Smartnet',
-        'url' => route('site.home', 'ru'),
+        'url' => route('site.home', 'uz'),
         'email' => data_get($settings, 'email.text'),
         'telephone' => data_get($settings, 'phone.text'),
     ]);
@@ -99,6 +99,13 @@
     @if (is_file(public_path('hot')) || is_file(public_path('build/manifest.json')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
+
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Smartnet" />
+    <link rel="manifest" href="/site.webmanifest" />
 </head>
 
 <body class="site-interactive bg-[#f7f8fc] text-slate-900 antialiased">

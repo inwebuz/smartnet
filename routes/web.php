@@ -10,7 +10,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/ru');
+Route::redirect('/', '/uz');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

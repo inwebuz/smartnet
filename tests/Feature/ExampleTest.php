@@ -14,7 +14,8 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/ru');
+        $this->get('/')->assertRedirect('/uz');
+        $response = $this->get('/uz');
 
         $response->assertStatus(200);
     }
