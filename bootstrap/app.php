@@ -15,7 +15,7 @@ return $app->withRouting(
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withPublicPath(__DIR__.'/../../public_html')
+
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
@@ -23,4 +23,6 @@ return $app->withRouting(
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
-    })->create();
+    })
+    ->create()
+    ->usePublicPath(__DIR__.'/../../public_html');
